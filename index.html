@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Direito na Mochila: você sabe sobre os seus direitos?</title>
+<meta name="description" content="Suba a trilha e descubra o que você sabe sobre os seus direitos. Um projeto do Grupo Escoteiro Santos Dumont (20º PR) com o e-book gratuito Direito na Mochila.">
+<meta property="og:title" content="Direito na Mochila: você sabe sobre os seus direitos?">
+<meta property="og:description" content="Suba a trilha, responda mito ou verdade e descubra o livro gratuito Direito na Mochila.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#1f4a3a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bitter:wght@500;700;800&display=swap">
+<style>
+/* Site de rolagem normal. A montanha fica parada (ao lado no computador, no fundo no celular) e a câmera segue quem sobe.
+   A trilha só existe até o marco atual: cada placa trava o caminho, e a escolha (esquerda ou direita) cria o próximo trecho. */
+:root {
+  --papel: #f6f4ec; --folha: #fffdf6; --tinta: #1d2a24; --suave: #55625a; --linha: #ddd6c2;
+  --mata: #1f4a3a; --trilha: #f2b632; --erro: #b8432f; --certo: #2d6a4f;
+  --display: "Bitter", Georgia, serif; --texto: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+  --saida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --papel: #121a16; --folha: #1a2520; --tinta: #ece8da; --suave: #a9b3ab; --linha: #34433b; --mata: #2c6650; --certo: #7cc59c; --erro: #ec8a75; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --papel: #121a16; --folha: #1a2520; --tinta: #ece8da; --suave: #a9b3ab; --linha: #34433b; --mata: #2c6650; --certo: #7cc59c; --erro: #ec8a75; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+::selection { background: var(--trilha); color: #1d2a24; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html, body { overflow-x: clip; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font-family: var(--texto); font-size: 18px; line-height: 1.55; }
+.lateral { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* topo do site */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--papel); }
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--papel) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--linha); }
+.topo .dentro { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.marca { font-family: var(--display); font-weight: 800; font-size: 19px; color: var(--tinta); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+.marca::before { content: ""; width: 22px; height: 6px; border-radius: 2px; background: var(--trilha); }
+.topo nav { display: flex; gap: 8px; }
+.btn { font: 700 15px/1 var(--texto); border-radius: 999px; padding: 10px 14px; cursor: pointer; border: 2px solid var(--mata); background: var(--mata); color: #fffdf6; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform .15s var(--saida); white-space: nowrap; }
+.btn:active { transform: scale(.97); }
+.so-cel { display: none; }
+@media (max-width: 899px) { .so-cel { display: inline; } }
+span.btn[aria-disabled] { opacity: .75; cursor: default; }
+.btn.contorno { background: transparent; color: var(--erro); border-color: var(--erro); }
+@media (max-width: 899px) { .so-pc { display: none; } .marca { font-size: 15px; line-height: 1.1; } .marca::before { width: 14px; } .topo .btn { font-size: 13px; padding: 8px 10px; } .topo nav { gap: 6px; } }
+@media (max-width: 379px) { .topo .btn { padding: 8px 7px; } .marca::before { display: none; } }
+.btn:focus-visible, .op:focus-visible, select:focus-visible { outline: 3px solid var(--trilha); outline-offset: 2px; }
+
+/* painel "tenho um problema agora" */
+.problema { max-width: 1180px; margin: 0 auto; padding-block: 0 14px; display: grid; gap: 10px; }
+.problema label { font-weight: 700; }
+.problema .linha { display: flex; gap: 8px; flex-wrap: wrap; }
+.problema select { font: 400 16px var(--texto); padding: 10px; border-radius: 8px; border: 2px solid var(--linha); background: var(--folha); color: var(--tinta); min-width: 0; flex: 1 1 240px; }
+.problema small { color: var(--suave); }
+
+/* palco: montanha + etapas */
+.palco { position: relative; }
+.montanha { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; z-index: 0; }
+.montanha svg { width: 100%; height: 100%; display: block; }
+.etapas { position: relative; z-index: 2; margin-top: -100vh; margin-top: -100svh; }
+.etapa { min-height: 92vh; min-height: 92svh; display: flex; align-items: flex-end; padding-block: 0 20px; }
+.etapa.abre { min-height: 100svh; align-items: center; }
+.etapa.longa { min-height: 140vh; min-height: 140svh; }
+.cartao { width: min(100%, 460px); margin-inline: auto; background: var(--folha); color: var(--tinta); border-radius: 14px; padding: 20px 20px 18px; display: grid; gap: 12px; box-shadow: 0 18px 40px -16px rgba(20, 40, 30, .45); border: 1px solid var(--linha); }
+@media (min-width: 900px) {
+  .palco { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .montanha { grid-column: 1; grid-row: 1; }
+  .etapas { grid-column: 2; grid-row: 1; margin-top: 0; }
+  .etapa { align-items: center; padding-block: 0; min-height: 100vh; }
+  .cartao { margin-inline: 24px auto; }
+}
+.cartao h2 { font-family: var(--display); font-size: clamp(22px, 4vw, 28px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.cartao p { margin: 0; }
+.acontece { font-style: italic; color: var(--suave); }
+.frase { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 1.3; }
+.ops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.op { font: 700 16px/1.2 var(--texto); padding: 13px 10px; border-radius: 10px; cursor: pointer; border: 2px solid var(--linha); background: var(--papel); color: var(--tinta); transition: border-color .15s, transform .12s var(--saida); display: grid; gap: 4px; justify-items: center; }
+.op small { font-weight: 400; font-size: 14px; color: var(--suave); line-height: 1.25; }
+.op:hover { border-color: var(--mata); }
+.op:active { transform: scale(.97); }
+.op[disabled] { cursor: default; opacity: .55; }
+.op.escolhida { border-color: var(--mata); background: var(--mata); color: #fffdf6; opacity: 1; }
+.op.escolhida small { color: #e6efe9; }
+.resposta, .escolha { display: grid; gap: 8px; border-top: 1px dashed var(--linha); padding-top: 12px; }
+.escolha > p { font-weight: 700; }
+.carimbo { justify-self: start; font-family: var(--display); font-weight: 800; letter-spacing: .08em; font-size: 15px; padding: 2px 10px; border-radius: 5px; border: 2.5px solid currentColor; transform: rotate(-3deg); }
+.carimbo.mito { color: var(--erro); }
+.carimbo.verdade { color: var(--certo); }
+.ponto { font-weight: 700; color: var(--mata); }
+.nota, .meta { font-size: 15px; color: var(--suave); }
+.segue { font-weight: 700; color: var(--mata); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ponto, :root:not([data-theme="light"]) .segue, :root:not([data-theme="light"]) .placar { color: var(--certo); } }
+:root[data-theme="dark"] .ponto, :root[data-theme="dark"] .segue, :root[data-theme="dark"] .placar { color: var(--certo); }
+
+/* abertura */
+.abertura h1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 7vw, 54px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.abertura .grifo { background: linear-gradient(transparent 62%, var(--trilha) 62%, var(--trilha) 92%, transparent 92%); }
+.rio-lema { font-family: var(--display); font-style: italic; color: var(--suave); }
+.quem { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quem .op { padding: 8px 6px 10px; }
+.quem svg { width: 54px; height: 70px; display: block; }
+
+/* chegada */
+.chegada { background: var(--papel); position: relative; z-index: 3; padding-block: 56px 72px; border-top: 1px solid var(--linha); }
+.chegada .dentro { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; }
+.chegada h2 { font-family: var(--display); font-size: clamp(28px, 5vw, 40px); margin: 0; line-height: 1.1; text-wrap: balance; }
+.placar { font-family: var(--display); font-weight: 800; font-size: clamp(54px, 12vw, 84px); line-height: 1; color: var(--mata); font-variant-numeric: tabular-nums; }
+.caderno { background: var(--folha); border: 1px solid var(--linha); border-radius: 12px; padding: 18px 20px; display: grid; gap: 8px; }
+.caderno h3 { font-family: var(--display); margin: 0; font-size: 19px; }
+.caderno ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.cta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.cta .btn { font-size: 17px; padding: 15px 20px; }
+.rodape-nota { font-size: 14.5px; color: var(--suave); }
+.copiado { color: var(--certo); font-weight: 700; }
+
+/* animações da cena */
+.boneco .perna { transform-box: fill-box; transform-origin: 50% 0; }
+.boneco.andando .perna.e { animation: passo .42s ease-in-out infinite alternate; }
+.boneco.andando .perna.d { animation: passo .42s ease-in-out infinite alternate-reverse; }
+@keyframes passo { from { transform: rotate(16deg); } to { transform: rotate(-16deg); } }
+.boneco .cabeca, .boneco .rosto { transition: transform .5s var(--saida), opacity .4s var(--saida); }
+.boneco .rosto { opacity: 0; }
+.boneco.olha-esq .cabeca { transform: translateX(-1.4px) rotate(-6deg); }
+.boneco.olha-esq .rosto { opacity: 1; }
+.boneco.olha-dir .cabeca { transform: translateX(1.4px) rotate(6deg); }
+.boneco.olha-dir .rosto { opacity: 1; transform: translateX(8.6px); }
+.boneco.ele .so-ela, .boneco.ela .so-ele { display: none; }
+.boneco.no-barco .perna { animation: none !important; }
+.cancela .barra { transform-box: fill-box; transform-origin: 0% 50%; transition: transform 1s var(--saida); }
+.cancela.aberta .barra { transform: rotate(-82deg); }
+#urso { transition: transform .9s var(--saida), opacity .6s; }
+#arvore-caindo { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 1.1s cubic-bezier(.5, 0, .75, 0); }
+#arvore-caindo.caiu { transform: rotate(80deg); }
+#arvore-caindo.afastada { transform: rotate(80deg) translateY(30px); opacity: 0; transition: transform .8s var(--saida), opacity .8s; }
+.ramo { transition: opacity .6s, stroke .6s; }
+@media (prefers-reduced-motion: reduce) {
+  .boneco.andando .perna { animation: none; }
+  #urso, #arvore-caindo, .boneco .cabeca, .cancela .barra { transition: none; }
+}
+
+/* acerto e erro */
+.cartao { transition: background-color .5s var(--saida), border-color .5s var(--saida); }
+.cartao.certo { --cor: #2f8f55; background: #e7f6ea; border-color: #9fd3ae; }
+.cartao.errado { --cor: #b8432f; background: #fbe7e2; border-color: #eab0a3; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cartao.certo { --cor: #7cc59c; background: #1c3527; border-color: #2f6b49; } :root:not([data-theme="light"]) .cartao.errado { --cor: #ec8a75; background: #3a2220; border-color: #6e3a31; } }
+:root[data-theme="dark"] .cartao.certo { --cor: #7cc59c; background: #1c3527; border-color: #2f6b49; }
+:root[data-theme="dark"] .cartao.errado { --cor: #ec8a75; background: #3a2220; border-color: #6e3a31; }
+.cartao.certo .resp .op.escolhida, .cartao.errado .resp .op.escolhida { background: var(--cor); border-color: var(--cor); color: #fff; }
+.cartao.certo .resposta, .cartao.errado .resposta { border-top-color: color-mix(in srgb, var(--cor) 45%, transparent); }
+.veredito { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 24px; color: var(--cor); }
+.cartao.certo .ponto, .cartao.errado .ponto { color: var(--cor); }
+.cartao.certo .veredito svg { animation: pulo .5s var(--saida); }
+@keyframes pulo { from { transform: scale(.4); } to { transform: scale(1); } }
+.acolhe { display: grid; gap: 8px; background: var(--folha); border: 1px solid var(--linha); border-radius: 10px; padding: 14px; }
+.caminhos { display: grid; gap: 8px; }
+.op.caminho { justify-items: start; text-align: left; padding: 12px 14px; }
+.op.caminho .cit { font-family: var(--display); font-weight: 700; font-size: 17px; line-height: 1.3; }
+.caderno .fonte { color: var(--suave); font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .cartao.certo .veredito svg { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="topo lateral">
+  <div class="dentro">
+    <a class="marca" href="#inicio">Direito na Mochila</a>
+    <nav>
+      <button class="btn contorno" type="button" id="abrir-problema" aria-expanded="false" aria-controls="problema">Tenho um problema<span class="so-pc">&nbsp;agora</span></button>
+      <a class="btn" href="#chegada">Livro <span class="so-pc">gratuito</span><span class="so-cel">grátis</span></a>
+    </nav>
+  </div>
+  <div class="problema" id="problema" hidden>
+    <label for="tema">Sobre o que é o seu problema?</label>
+    <div class="linha">
+      <select id="tema"></select>
+      <button class="btn" type="button">Ver os pontos</button>
+    </div>
+    <small>Em breve: os pontos de cada capítulo para ler na hora. Por enquanto, o capítulo escolhido indica onde está a resposta no livro.</small>
+  </div>
+</header>
+
+<main id="inicio">
+  <div class="palco">
+    <div class="montanha" aria-hidden="true">
+      <svg id="cena" viewBox="0 0 400 1100" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7e2b0"/><stop offset=".35" stop-color="#f0c27c"/></linearGradient>
+          <pattern id="lenco" width="3.6" height="3.6" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">
+            <rect width="1.2" height="3.6" fill="#13265a"/><rect x="1.2" width="1.2" height="3.6" fill="#2a56c6"/><rect x="2.4" width="1.2" height="3.6" fill="#ffffff"/>
+          </pattern>
+        </defs>
+        <rect width="400" height="1400" fill="url(#ceu)"/>
+        <circle id="sol" cx="78" cy="150" r="36" fill="#fbe7b6"/>
+        <path d="M0 330 C80 290 150 170 200 114 C214 98 238 98 252 114 C300 166 345 262 400 288 L400 1400 L0 1400z" fill="#b8ccb0"/>
+        <g fill="#8fae95"><path d="M40 360 l10 -30 l10 30z"/><path d="M58 366 l8 -24 l8 24z"/><path d="M330 330 l10 -32 l10 32z"/><path d="M346 338 l8 -24 l8 24z"/><path d="M300 420 l9 -28 l9 28z"/></g>
+        <path d="M0 520 C90 482 180 506 250 482 C320 460 360 470 400 462 L400 1400 L0 1400z" fill="#7fa58a"/>
+        <g fill="#4f7d63"><path d="M14 560 l12 -36 l12 36z"/><path d="M34 566 l10 -30 l10 30z"/><path d="M356 520 l12 -38 l12 38z"/><path d="M372 530 l9 -28 l9 28z"/><path d="M200 640 l10 -30 l10 30z"/></g>
+        <path d="M0 822 C90 792 200 832 300 802 C350 792 380 796 400 790 L400 1400 L0 1400z" fill="#2e6a52"/>
+        <g fill="#1f4a3a"><path d="M330 940 l24 -70 l24 70z"/><path d="M354 960 l20 -56 l20 56z"/><path d="M-8 1000 l22 -66 l22 66z"/><path d="M14 1060 l18 -52 l18 52z"/></g>
+        <!-- acampamento -->
+        <g transform="translate(225 112)"><path d="M-10 0 l10 -16 l10 16z" fill="#f2b632" stroke="#5e3b1a" stroke-width="1.2"/><rect x="13" y="-22" width="1.4" height="22" fill="#5e3b1a"/><path d="M14.4 -22 h9 l-2 3 l2 3 h-9z" fill="#b8432f"/></g>
+        <!-- rio, trilhas e objetos entram aqui pelo script -->
+        <g id="agua"></g>
+        <g id="trilhas"></g>
+        <g id="objetos"></g>
+        <g id="andarilho" class="boneco ele"></g>
+        <g id="frente"></g>
+      </svg>
+    </div>
+
+    <div class="etapas lateral" id="etapas">
+      <section class="etapa abre" data-em="0">
+        <div class="cartao abertura">
+          <h1>Você sabe sobre os seus <span class="grifo">direitos?</span></h1>
+          <p>Suba a trilha até o acampamento. Placas fecham o caminho, aparece um urso, cai uma árvore e você desce um rio de barco. Em cada parada, uma frase do livro <b>Direito na Mochila</b>: é mito ou verdade? Depois, você escolhe o seu caminho.</p>
+          <p class="rio-lema">“Ninguém se banha duas vezes no mesmo rio.” Cada caminhada sorteia marcos diferentes.</p>
+          <p><b>Quem sobe a trilha?</b></p>
+          <div class="quem">
+            <button class="op escolhida" type="button" data-quem="ele"><svg viewBox="-14 -54 28 58"><g class="boneco ele"></g></svg>Escoteiro</button>
+            <button class="op" type="button" data-quem="ela"><svg viewBox="-14 -54 28 58"><g class="boneco ela"></g></svg>Escoteira</button>
+          </div>
+          <p class="segue">Role a página para começar a subir.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="chegada lateral" id="chegada">
+    <div class="dentro">
+      <h2>Seu caderno de campo</h2>
+      <div class="placar" id="placar">0 de 0</div>
+      <p id="resumo">Suba a trilha e responda os marcos para ver o seu resultado aqui.</p>
+      <div class="caderno">
+        <h3>Para ler no livro</h3>
+        <ul id="anotacoes"><li>Nada anotado ainda.</li></ul>
+      </div>
+      <div class="caderno">
+        <h3>As frases do seu caminho</h3>
+        <ul id="frases-caminho"><li>Escolha os caminhos na trilha para guardar as frases aqui.</li></ul>
+      </div>
+      <p>Cada marco da trilha é um ponto do livro. O <b>Direito na Mochila</b> tem 108 pontos como esses, em linguagem simples, com passo a passo e onde buscar ajuda em Curitiba.</p>
+      <div class="cta">
+        <span class="btn" aria-disabled="true">Livro completo em PDF: grátis, em breve</span>
+        <button class="btn contorno" type="button" id="desafiar">Desafiar um amigo</button>
+        <span class="copiado" id="copiado" hidden></span>
+      </div>
+      <p class="rodape-nota">Cada caminhada sorteia 8 marcos entre 48 e 14 frases escoteiras entre 48. Ninguém se banha duas vezes no mesmo rio. Um projeto do Grupo Escoteiro Santos Dumont, 20º Curitiba PR.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- conteúdo: 16 capítulos, 3 marcos cada (frases do "Mito ou verdade" do livro) ----------
+  const CAPS = { 1: "A lei no papel e na vida", 2: "Seus direitos diante do Estado", 3: "Benefícios e serviços públicos", 4: "Fui abordado", 5: "Crimes do dia a dia", 6: "A Justiça na prática", 7: "Trabalhar e se aposentar", 8: "Empreender e impostos", 9: "Dinheiro e dívidas", 10: "Consumidor", 11: "Viagem", 12: "Vida digital", 13: "Morar", 14: "Família", 15: "Bens, velhice e despedidas", 16: "Na trilha e no grupo" };
+  const M = "mito", V = "verdade";
+  const BANCO = [
+    [1, "1.1", "Se eu não sabia da lei, não posso ser punido.", M, "A lei vale para todos, sabendo ou não."],
+    [1, "1.2", "Se o presidente vetar o projeto de lei, acabou: a lei não sai.", M, "O veto volta para o Congresso, que pode derrubá-lo com o voto da maioria absoluta dos deputados e dos senadores. Aí a lei sai mesmo assim."],
+    [1, "1.4", "Com 16 ou 17 anos posso votar, mas não sou obrigado.", V, "Nessa idade o voto é facultativo."],
+    [2, "2.1", "Habeas corpus é um direito básico, mas precisa da Defensoria Pública ou de advogado para pedir.", M, "Qualquer pessoa pode pedir, até escrito à mão."],
+    [2, "2.2", "O hotel pode ficar com meu RG até eu pagar.", M, "É proibido reter documento."],
+    [2, "2.4", "Registrar um bebê no cartório é gratuito.", V, "O registro de nascimento não custa nada."],
+    [3, "3.1", "O SUS é só para quem é pobre ou tem carteira assinada.", M, "É para todos, inclusive para quem tem plano de saúde."],
+    [3, "3.2", "Dá para ter atendimento de psicólogo sem pagar.", V, "Há atendimento no SUS e nas clínicas-escola das faculdades, gratuitas ou com preço social."],
+    [3, "3.4", "Vaga na creche depende de ter disponibilidade, mas se os pais forem CLT é obrigatória.", M, "A vaga é um direito de toda criança, trabalhem os pais de carteira assinada ou não. Se não tem vaga, a Justiça manda criar."],
+    [4, "4.4", "Posso gravar uma conversa da qual eu participo, mesmo sem avisar.", V, "Se você participa da conversa, gravar não é crime."],
+    [4, "4.4", "Filmar a abordagem policial não é desacato.", V, "Filmar não é ofender."],
+    [4, "4.5", "Se eu recusar o bafômetro, não posso ir para a cadeia.", M, "Recusar dá a mesma multa e a mesma suspensão de quem bebeu. E, com sinais claros de embriaguez, dirigir depois de beber é crime, com possibilidade de prisão."],
+    [5, "5.2", "Sou menor de idade: se eu cometer um crime, não acontece nada.", M, "O adolescente responde por ato infracional e pode ficar até 3 anos internado."],
+    [5, "5.5", "Quem me mandou a foto íntima é quem tem culpa; eu só divulguei.", M, "O crime é de quem divulga."],
+    [5, "5.10", "Se um adolescente de 16 anos bebe, quem responde é quem vendeu ou forneceu a bebida.", V, "O adolescente não vai preso por beber."],
+    [6, "6.1", "Se tem um processo contra mim, é só não ir à audiência.", M, "No Juizado, quem falta perde por revelia."],
+    [6, "6.1", "O fórum está me pedindo Pix para continuar o processo, então vou pagar para continuar.", M, "É golpe. O fórum não pede Pix por mensagem."],
+    [6, "6.3", "No Juizado Especial dá para processar sem advogado.", V, "Até 20 salários mínimos no Juizado estadual e 60 no federal."],
+    [7, "7.1", "Estagiário tem direito a 30 dias de recesso remunerado por ano.", V, "Também tem bolsa e seguro, mas não tem 13º nem FGTS."],
+    [7, "7.2", "Quem pede demissão recebe as férias vencidas e as proporcionais.", V, "Pedir demissão não faz perder as férias."],
+    [7, "7.3", "Acidente no ônibus, indo para o trabalho, não conta.", M, "Para o INSS, conta."],
+    [8, "8.1", "Dá para abrir MEI sozinho, de graça e sem contador.", V, "Abrir MEI é simples e gratuito."],
+    [8, "8.1", "MEI se aposenta por tempo de contribuição.", M, "Só por idade, com um salário mínimo, salvo se complementar a contribuição."],
+    [8, "8.3", "A transição da reforma tributária vai até 2033.", V, "Não muda tudo de uma vez em 2026."],
+    [9, "9.2", "Se o dinheiro caiu na minha conta, aceitei o empréstimo.", M, "Não, se você não pediu e não usou."],
+    [9, "9.3", "Marketing multinível é sempre pirâmide.", M, "O multinível legal vende produtos de verdade. A pirâmide vive de recrutar pessoas."],
+    [9, "9.4", "A cláusula que limita meus direitos precisa estar em destaque no contrato.", V, "Letra miúda não basta: o que limita direitos tem de aparecer com clareza."],
+    [10, "10.1", "A garantia do fabricante se soma à garantia da lei.", V, "Uma não substitui a outra."],
+    [10, "10.2", "O prazo de 7 dias para desistir da compra online conta a partir do recebimento.", V, "Não conta da data da compra."],
+    [10, "10.3", "A loja pode cobrar o preço do sistema, mesmo com outro preço na etiqueta.", M, "Vale o menor."],
+    [11, "11.3", "Um grupo de adolescentes não pode se hospedar sozinho: precisa de um adulto responsável ou de autorização por escrito.", V, "Menores de idade só se hospedam acompanhados dos pais ou responsáveis, ou com autorização por escrito. Atenção, escoteiros!"],
+    [11, "11.4", "Show cancelado, eles podem me dar só um crédito.", M, "Você pode exigir o dinheiro de volta."],
+    [11, "11.5", "Menor de 18 anos viajando sozinho para o exterior precisa de autorização.", V, "Para o exterior, a autorização vale até os 18 anos."],
+    [12, "12.2", "Se eu cliquei em ‘aceito’, a empresa pode fazer qualquer coisa com meus dados.", M, "O uso precisa ser compatível com a finalidade informada."],
+    [12, "12.4", "Se minha conta foi hackeada, a plataforma também tem deveres comigo.", V, "A plataforma tem deveres de segurança e de atendimento."],
+    [12, "12.4", "A Justiça pode mandar a plataforma entregar os registros de quem criou um perfil falso.", V, "Dá para descobrir quem foi."],
+    [13, "13.1", "Combinado por WhatsApp vale.", V, "Contrato não precisa ser em papel para valer. Guarde as conversas."],
+    [13, "13.1", "Contrato só vale se for reconhecido em cartório.", M, "O reconhecimento de firma ajuda a provar a assinatura, mas não é exigido na maioria dos contratos."],
+    [13, "13.2", "Se eu atrasar um mês o aluguel, o dono pode trocar a fechadura.", M, "Só com ordem judicial."],
+    [14, "14.1", "Se o homem se recusar a fazer DNA, a recusa pesa contra ele.", V, "A recusa pesa contra ele na Justiça."],
+    [14, "14.2", "Adulto pode mudar o nome direto no cartório, sem juiz.", V, "Para adultos, o cartório resolve."],
+    [14, "14.8", "Adoção pode ser desfeita se não der certo.", M, "É irrevogável."],
+    [15, "15.3", "Com 16 anos posso fazer testamento.", V, "A partir dos 16 anos a lei já permite."],
+    [15, "15.3", "Posso mudar meu testamento quantas vezes quiser.", V, "Vale o último."],
+    [15, "15.5", "Vendi o carro, então nada mais é comigo.", M, "Enquanto a venda não for comunicada, o problema ainda pode cair em você."],
+    [16, "16.1", "Escoteiro tem licença para portar faca.", M, "Não existe licença. O contexto da atividade é o que protege."],
+    [16, "16.4", "Quem devolve algo que achou tem direito a recompensa.", V, "A lei prevê pelo menos 5% do valor, além das despesas."],
+    [16, "16.5", "Sou obrigado a entrar num rio para salvar alguém, mesmo sem saber nadar.", M, "A lei não exige que você arrisque a vida. Chame o socorro."],
+  ].map(([cap, ponto, frase, certa, exp]) => ({ cap, ponto, frase, certa, exp }));
+
+  const sorteia = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const umDoCap = (c) => sorteia(BANCO.filter((b) => b.cap === c))[0];
+  // 16 capítulos viram 8 pares: cada nível tem um capítulo à esquerda e outro à direita, então nenhum caminho repete capítulo
+  const caps = sorteia(Object.keys(CAPS).map(Number));
+  const NIVEIS = Array.from({ length: 8 }, (_, i) => ({ esq: umDoCap(caps[2 * i]), dir: umDoCap(caps[2 * i + 1]) }));
+  const ladoInicial = Math.random() < 0.5 ? "esq" : "dir";
+
+  // ---------- o escoteiro (uniforme azul, calça bege, distintivos e lenço do GESD) ----------
+  const BONECO = `
+    <ellipse cx="0" cy="0" rx="8" ry="2" fill="#0d2a1e" opacity=".25"/>
+    <g class="perna e"><rect x="-5" y="-15" width="4.2" height="15" rx="2" fill="#cdb88f"/><rect x="-5.6" y="-2.6" width="5.2" height="2.6" rx="1.2" fill="#3a2a1e"/></g>
+    <g class="perna d"><rect x="0.8" y="-15" width="4.2" height="15" rx="2" fill="#cdb88f"/><rect x="0.4" y="-2.6" width="5.2" height="2.6" rx="1.2" fill="#3a2a1e"/></g>
+    <rect x="-10.6" y="-31" width="3.6" height="14" rx="1.8" fill="#3f6fb5"/><rect x="7" y="-31" width="3.6" height="14" rx="1.8" fill="#3f6fb5"/>
+    <rect x="-10.4" y="-29.2" width="3.2" height="2.6" rx=".6" fill="#f2b632"/><rect x="7.2" y="-29.2" width="3.2" height="2.6" rx=".6" fill="#b8432f"/>
+    <rect x="7.2" y="-25.8" width="3.2" height="1.6" fill="#ffffff"/>
+    <circle cx="-8.8" cy="-16.4" r="1.7" fill="#c99a6e"/><circle cx="8.8" cy="-16.4" r="1.7" fill="#c99a6e"/>
+    <rect x="-7.5" y="-32" width="15" height="18" rx="3.5" fill="#3f6fb5"/>
+    <rect x="-7.5" y="-16" width="15" height="2" fill="#4a3520"/>
+    <rect x="-5.2" y="-32" width="1.6" height="9" fill="#5e4426"/><rect x="3.6" y="-32" width="1.6" height="9" fill="#5e4426"/>
+    <path d="M-6.2 -32.6 L6.2 -32.6 L0 -21.5z" fill="url(#lenco)" stroke="#13265a" stroke-width=".4"/>
+    <rect x="-5.6" y="-34.2" width="11.2" height="2.6" rx="1.3" fill="url(#lenco)" stroke="#13265a" stroke-width=".4"/>
+    <rect x="-6.5" y="-25" width="13" height="10" rx="2.5" fill="#7a5a35"/><rect x="-6.5" y="-25" width="13" height="3.4" rx="1.5" fill="#8f6b40"/>
+    <rect x="-7.6" y="-16.2" width="15.2" height="3.8" rx="1.9" fill="#b8432f"/>
+    <g class="cabeca">
+      <rect x="-1.8" y="-36.5" width="3.6" height="3" fill="#c99a6e"/>
+      <path class="so-ela" d="M-2 -38 C-3.6 -33 -2.4 -29 0 -27.5 C2.4 -29 3.6 -33 2 -38z" fill="#5a3a22"/>
+      <circle cy="-40" r="5" fill="#c99a6e"/>
+      <circle class="so-ele" cy="-40.4" r="5" fill="#3b2a1e"/>
+      <circle class="so-ela" cy="-40.4" r="5.2" fill="#5a3a22"/>
+      <circle cx="-4.9" cy="-39.4" r="1.2" fill="#c99a6e"/><circle cx="4.9" cy="-39.4" r="1.2" fill="#c99a6e"/>
+      <circle class="rosto" cx="-4.4" cy="-39.4" r="2.4" fill="#c99a6e"/>
+      <ellipse cy="-43.6" rx="9" ry="2.2" fill="#7a5230"/>
+      <path d="M-4.5 -43.6 L-3.2 -49 Q0 -50.6 3.2 -49 L4.5 -43.6z" fill="#8a5e36"/>
+      <rect x="-4.4" y="-45.2" width="8.8" height="1.4" fill="#4a3520"/>
+    </g>`;
+  document.querySelectorAll(".boneco").forEach((g) => (g.innerHTML = BONECO));
+  const andarilho = document.getElementById("andarilho");
+
+  // ---------- frases escoteiras: cada caminho tem a sua (sorteadas como os marcos) ----------
+  const LE = "Lei Escoteira, artigo ", RE = "Ramo Escoteiro, Sênior e Pioneiro", LL = "Lei do Lobinho", BP = "Baden-Powell, fundador do Escotismo";
+  const FRASES = [
+    ["O escoteiro tem uma só palavra; sua honra vale mais que a própria vida.", LE + "1", RE],
+    ["O escoteiro é leal.", LE + "2", RE],
+    ["O escoteiro está sempre alerta para ajudar o próximo e pratica diariamente uma boa ação.", LE + "3", RE],
+    ["O escoteiro é amigo de todos e irmão dos demais escoteiros.", LE + "4", RE],
+    ["O escoteiro é cortês.", LE + "5", RE],
+    ["O escoteiro é bom para os animais e as plantas.", LE + "6", RE],
+    ["O escoteiro é obediente e disciplinado.", LE + "7", RE],
+    ["O escoteiro é alegre e sorri nas dificuldades.", LE + "8", RE],
+    ["O escoteiro é econômico e respeita o bem alheio.", LE + "9", RE],
+    ["O escoteiro é limpo de corpo e alma.", LE + "10", RE],
+    ["O lobinho ouve sempre os velhos lobos.", LL, "Ramo Lobinho"],
+    ["O lobinho pensa primeiro nos outros.", LL, "Ramo Lobinho"],
+    ["O lobinho abre os olhos e os ouvidos.", LL, "Ramo Lobinho"],
+    ["O lobinho é limpo e está sempre alegre.", LL, "Ramo Lobinho"],
+    ["O lobinho diz sempre a verdade.", LL, "Ramo Lobinho"],
+    ["Melhor possível.", "Lema", "Ramo Lobinho"],
+    ["Sempre alerta!", "Lema", "Ramos Escoteiro e Sênior"],
+    ["Servir.", "Lema", "Ramo Pioneiro"],
+    ["Ajudar o próximo em toda e qualquer ocasião.", "Promessa Escoteira", "Todos os ramos"],
+    ["Fazer todos os dias uma boa ação.", "Promessa do Lobinho", "Ramo Lobinho"],
+    ["Procure deixar este mundo um pouco melhor do que o encontrou.", BP, "Última mensagem"],
+    ["A verdadeira felicidade está em fazer os outros felizes.", BP, "Última mensagem"],
+    ["Reme a sua própria canoa.", BP, "Livro escrito para os pioneiros"],
+    ["Olhe longe e, quando achar que já olha longe, olhe mais longe ainda.", BP, "Livro escrito para os pioneiros"],
+    ["Pergunte ao jovem.", BP, "Todos os ramos"],
+    ["O escoteiro sorri e assobia diante de todas as dificuldades.", BP, "Lei original de 1908"],
+    ["A honra de um escoteiro é digna de confiança.", BP, "Lei original de 1908"],
+    ["Esteja preparado, de mente e de corpo.", BP, "Escotismo para Rapazes"],
+    ["Uma fraternidade do ar livre e do serviço.", BP, "Sobre o ramo Pioneiro"],
+    ["A força da Alcateia está no Lobo, e a força do Lobo está na Alcateia.", "Rudyard Kipling, O Livro da Jângal", "Ramo Lobinho"],
+    ["Somos do mesmo sangue, tu e eu.", "Mowgli, O Livro da Jângal", "Ramo Lobinho"],
+    ["Dever para com Deus.", "Princípios do Escotismo", "Todos os ramos"],
+    ["Dever para com o próximo.", "Princípios do Escotismo", "Todos os ramos"],
+    ["Dever para consigo mesmo.", "Princípios do Escotismo", "Todos os ramos"],
+    ["Aprender fazendo.", "Método Escoteiro", "Todos os ramos"],
+    ["Na patrulha, cada um tem o seu lugar e a sua tarefa.", "Método Escoteiro", "Ramo Escoteiro"],
+    ["A natureza é a nossa sala de aula.", "Método Escoteiro", "Todos os ramos"],
+    ["Cada um avança no seu próprio ritmo.", "Método Escoteiro", "Todos os ramos"],
+    ["Brincar, aprender e crescer junto com a Alcateia.", "Valor do ramo", "Ramo Lobinho"],
+    ["Na patrulha, ninguém fica para trás.", "Valor do ramo", "Ramo Escoteiro"],
+    ["Aventura com responsabilidade: encare o desafio.", "Valor do ramo", "Ramo Sênior"],
+    ["Planejar o próprio caminho e servir à comunidade.", "Valor do ramo", "Ramo Pioneiro"],
+    ["Deixe o lugar mais limpo do que encontrou.", "Tradição do acampamento", "Todos os ramos"],
+    ["Uma vez escoteiro, sempre escoteiro.", "Tradição escoteira", "Todos os ramos"],
+    ["O Escotismo é aberto a todos, sem distinção de origem, raça ou crença.", "Princípios do Escotismo", "Movimento Escoteiro Mundial"],
+    ["Somos uma só fraternidade mundial.", "Movimento Escoteiro Mundial", "Todos os ramos"],
+    ["Ajudar a construir um mundo melhor.", "Missão do Escotismo", "Movimento Escoteiro Mundial"],
+    ["A caminhada não é sobre chegar rápido, mas chegar.", "Direito na Mochila", "Todos os ramos"],
+  ].map(([t, fonte, ramo]) => ({ t, fonte, ramo }));
+  const baralho = sorteia(FRASES); // 14 frases por caminhada (2 em cada uma das 7 bifurcações), sem repetir
+
+  // ---------- a montanha: cada escolha leva a um lugar diferente ----------
+  const Y = { 2: 902, 3: 805, 6: 455, 7: 350, 8: 240 };
+  const N = { 0: { x: 200, y: 1092 }, 1: { x: 205, y: 1000 } }, ACAMP = { x: 225, y: 116 };
+  const RIO = 4; // do marco 4 (margem) ao marco 5 (desembarque), sempre de barco
+  const escala = (y) => 0.34 + Math.max(0, Math.min(1, (y - 100) / 980)) * 1.0;
+  const largura = (y) => 3 + Math.max(0, (y - 100) / 1000) * 14;
+  const f = (n) => n.toFixed(1);
+  const mk = (tag, attrs, pai) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (pai) pai.appendChild(e); return e; };
+  const gAgua = document.getElementById("agua"), gTrilhas = document.getElementById("trilhas"), gObj = document.getElementById("objetos");
+  gAgua.parentNode.insertBefore(gTrilhas, gAgua); // o rio passa por cima das pontas da trilha
+
+  // rio: canal principal vindo da esquerda até a forquilha F, e dois braços que levam a margens bem distantes
+  const F = { x: 262, y: 666 }, wR = largura(640) * 2.4;
+  const RIO_PRINC = mk("path", { d: `M-40 752 L${F.x} ${F.y}`, stroke: "#6fb0c6", "stroke-width": wR, fill: "none", "stroke-linecap": "round" }, gAgua);
+  const BRACO = {
+    esq: { fim: { x: 70, y: 572 }, d: `C220 632 140 590 70 572`, sai: `M70 572 C30 562 0 556 -40 552` },
+    dir: { fim: { x: 338, y: 548 }, d: `C330 640 352 590 338 548`, sai: `M338 548 C330 525 380 510 440 505` },
+  };
+  for (const l of ["esq", "dir"]) {
+    const b = BRACO[l];
+    mk("path", { d: `M${F.x} ${F.y} ${b.d}`, stroke: "#6fb0c6", "stroke-width": wR * .85, fill: "none", "stroke-linecap": "round" }, gAgua);
+    mk("path", { d: b.sai, stroke: "#6fb0c6", "stroke-width": wR * .8, fill: "none", "stroke-linecap": "round" }, gAgua);
+    mk("path", { d: `M${F.x} ${F.y} ${b.d}`, stroke: "#9fd0de", "stroke-width": 1.6, fill: "none", "stroke-dasharray": "6 14" }, gAgua);
+  }
+  mk("path", { d: `M-40 752 L${F.x} ${F.y}`, stroke: "#9fd0de", "stroke-width": 1.6, fill: "none", "stroke-dasharray": "6 14" }, gAgua);
+  const naMargem = (x) => { const t = (x + 40) / (F.x + 40); return { x, y: 752 + (F.y - 752) * t }; };
+
+  function trecho(a, b, extra = 0) {
+    // sai e chega em cada marco na vertical (a cancela fecha a passagem); a curva no meio dá a cara de trilha
+    const h = Math.abs(b.y - a.y) * 0.55, w = (Math.random() - .5) * 30;
+    let d = `M${f(a.x)} ${f(a.y)} C${f(a.x + w)} ${f(a.y - h)} ${f(b.x - w)} ${f(b.y + h)} ${f(b.x)} ${f(b.y)}`;
+    if (extra) d += ` C${f(b.x)} ${f(b.y - extra * .5)} ${f(b.x + (b.x < 200 ? -30 : 30))} ${f(b.y - extra)} ${f(b.x + (b.x < 200 ? -45 : 45))} ${f(b.y - extra * 1.3)}`;
+    return d;
+  }
+  const traca = (d, y) => mk("path", { d, stroke: "#ecdcab", "stroke-width": largura(y), fill: "none", "stroke-linecap": "round", class: "ramo" }, gTrilhas);
+  const invisivel = (d) => mk("path", { d, fill: "none", stroke: "none" }, gTrilhas);
+
+  const trechos = { 0: { u: traca(trecho(N[0], N[1]), 1046) } };
+  const destinos = {}, escolhas = {};
+  const coloca = (el, p, esc, dx = 0, dy = 0, vira = 1) => el.setAttribute("transform", `translate(${f(p.x + dx)} ${f(p.y + dy)}) scale(${f(esc * vira)} ${esc.toFixed(3)})`);
+  function caminho(k) { const t = trechos[k]; return t.u || t[escolhas[k] || "esq"]; }
+  function ponto(em) {
+    let k = Math.max(0, Math.min(8, Math.floor(em))), t = Math.max(0, Math.min(1, em - k));
+    while (k > 0 && !trechos[k]) { k--; t = 1; } // trecho ainda não aberto: fica no fim do anterior
+    const p = caminho(k);
+    return p.getPointAtLength(t * p.getTotalLength());
+  }
+
+  // depois de responder o marco k, a trilha se abre em dois caminhos que vão para lugares diferentes
+  function abrirCaminhos(k) {
+    const a = N[k];
+    if (k === RIO) {
+      const t = {};
+      for (const l of ["esq", "dir"]) t[l] = invisivel(`M${f(a.x)} ${f(a.y)} L${F.x} ${F.y} ${BRACO[l].d}`);
+      destinos[k] = { esq: BRACO.esq.fim, dir: BRACO.dir.fim };
+      trechos[k] = t; return;
+    }
+    if (k === 8) { trechos[8] = { u: traca(trecho(a, ACAMP), 170) }; return; }
+    const delta = 75 + Math.random() * 35;
+    let xe = a.x - delta, xd = a.x + delta;
+    if (k === 3) { xe = Math.max(20, Math.min(110, xe)); xd = Math.max(xe + 90, Math.min(220, xd)); }
+    else { if (xe < 45) { xe = 45; xd = Math.max(xd, 150); } if (xd > 355) { xd = 355; xe = Math.min(xe, 250); } }
+    const dest = k === 3 ? { esq: naMargem(xe), dir: naMargem(xd) } : { esq: { x: xe, y: Y[k + 1] }, dir: { x: xd, y: Y[k + 1] } };
+    destinos[k] = dest;
+    trechos[k] = { esq: traca(trecho(a, dest.esq), (a.y + dest.esq.y) / 2), dir: traca(trecho(a, dest.dir), (a.y + dest.dir.y) / 2) };
+  }
+  function seguir(k, lado) {
+    escolhas[k] = lado;
+    const outro = lado === "esq" ? "dir" : "esq";
+    N[k + 1] = destinos[k][lado];
+    if (k !== RIO) {
+      // o caminho que você não seguiu continua para o seu próprio destino e some na mata
+      const t = trechos[k][outro], dest = destinos[k][outro];
+      t.setAttribute("d", trecho(N[k], dest, 70)); t.style.opacity = .22;
+    }
+    montarMarco(k + 1);
+  }
+
+  // objetos de cada marco, criados quando a pessoa chega ao lugar dele
+  const olhar = {}, cancelas = {};
+  let urso, pUrso, sU, ladoUrso = 1, arvore, barco;
+  function placaLateral(p, s, dx) { const g = mk("g", {}, gObj); coloca(g, p, s, dx);
+    mk("rect", { x: -1.4, y: -30, width: 2.8, height: 30, fill: "#5e3b1a" }, g); mk("rect", { x: -13, y: -41, width: 26, height: 13, rx: 2, fill: "#9a6532", stroke: "#5e3b1a", "stroke-width": 1 }, g); mk("rect", { x: -13, y: -41, width: 26, height: 3, fill: "#f2b632" }, g); }
+  function cancela(k) {
+    const p = N[k], s = escala(p.y), meia = Math.max(16, (largura(p.y) / 2 + 12) / s);
+    const g = mk("g", { class: "cancela" }, gObj); coloca(g, p, s);
+    mk("rect", { x: -meia - 2, y: -26, width: 4, height: 26, fill: "#5e3b1a" }, g);
+    mk("rect", { x: meia - 2, y: -26, width: 4, height: 26, fill: "#5e3b1a" }, g);
+    const barra = mk("g", { class: "barra" }, g);
+    mk("rect", { x: -meia, y: -21, width: meia * 2, height: 6, rx: 1.2, fill: "#9a6532", stroke: "#5e3b1a", "stroke-width": .8 }, barra);
+    for (let x = -meia + 3; x < meia - 4; x += 9) mk("rect", { x, y: -21, width: 4.5, height: 6, fill: "#f2b632" }, barra);
+    const placa = mk("g", { transform: `translate(${f(-meia - 4)} 0)` }, g);
+    mk("rect", { x: -1.4, y: -30, width: 2.8, height: 30, fill: "#5e3b1a" }, placa);
+    mk("rect", { x: -13, y: -40, width: 22, height: 13, rx: 2, fill: "#9a6532", stroke: "#5e3b1a", "stroke-width": 1 }, placa);
+    mk("rect", { x: -13, y: -40, width: 22, height: 3, fill: "#f2b632" }, placa);
+    cancelas[k] = g; olhar[k] = "esq";
+  }
+  function montarMarco(k) {
+    const p = N[k], s = escala(p.y);
+    if (k === 1 || k === 6) cancela(k);
+    if (k === 2) {
+      pUrso = p; sU = s; ladoUrso = p.x > 250 ? -1 : 1; olhar[2] = ladoUrso > 0 ? "dir" : "esq";
+      urso = mk("g", { id: "urso" }, gObj);
+      urso.innerHTML = `<ellipse cx="0" cy="0" rx="20" ry="4" fill="#163a2a" opacity=".35"/><ellipse cx="0" cy="-15" rx="19" ry="13" fill="#3b2a1e"/><circle cx="-17" cy="-24" r="8.5" fill="#3b2a1e"/><circle cx="-21" cy="-31" r="3" fill="#3b2a1e"/><circle cx="-13" cy="-31.5" r="3" fill="#3b2a1e"/><ellipse cx="-23" cy="-22" rx="4" ry="3" fill="#6b4b33"/><circle cx="-25.5" cy="-23" r="1.2" fill="#111"/><circle cx="-18" cy="-26" r="1" fill="#111"/><rect x="-14" y="-5" width="6" height="7" rx="2" fill="#3b2a1e"/><rect x="6" y="-5" width="6" height="7" rx="2" fill="#3b2a1e"/>`;
+      urso.style.opacity = 0;
+      const moita = mk("g", {}, gObj);
+      moita.innerHTML = `<ellipse cx="0" cy="-8" rx="24" ry="13" fill="#1f4a3a"/><ellipse cx="-12" cy="-14" rx="12" ry="9" fill="#2e6a52"/><ellipse cx="12" cy="-12" rx="11" ry="8" fill="#285e48"/>`;
+      coloca(moita, p, s, 64 * ladoUrso, 4);
+    }
+    if (k === 3) {
+      const g = mk("g", {}, gObj);
+      g.innerHTML = `<g id="arvore-caindo"><rect x="-3" y="-60" width="6" height="60" fill="#5e3b1a"/><path d="M-16 -44 L0 -96 L16 -44z" fill="#1f4a3a"/><path d="M-13 -62 L0 -104 L13 -62z" fill="#2e6a52"/></g>`;
+      coloca(g, p, s, -26); arvore = g.firstChild;
+    }
+    if (k === 4) {
+      barco = mk("g", {}, document.getElementById("frente"));
+      barco.innerHTML = `<path d="M-22 0 L22 0 L15 9 L-15 9z" fill="#8a5a2b" stroke="#5e3b1a" stroke-width="1.2"/><rect x="-22" y="-2" width="44" height="3" fill="#a87443"/>`;
+    }
+    if (k === 7) { placaLateral(p, s, -22); olhar[7] = "esq"; }
+    if (k === 8) {
+      const g = mk("g", {}, gObj); coloca(g, p, s, 26); olhar[8] = "dir";
+      mk("rect", { x: -14, y: -6, width: 28, height: 4, fill: "#8f5d2e" }, g); mk("rect", { x: -13, y: -2, width: 3, height: 8, fill: "#5e3b1a" }, g); mk("rect", { x: 10, y: -2, width: 3, height: 8, fill: "#5e3b1a" }, g);
+      mk("rect", { x: -14, y: -18, width: 2.4, height: 12, fill: "#5e3b1a" }, g); mk("rect", { x: 11.6, y: -18, width: 2.4, height: 12, fill: "#5e3b1a" }, g); mk("rect", { x: -14, y: -18, width: 28, height: 2.2, fill: "#8f5d2e" }, g);
+    }
+  }
+  montarMarco(1);
+  document.getElementById("frente").before(andarilho); // escoteiro por baixo da borda do barco
+
+  // ---------- etapas (só existem até o marco atual: a cancela trava o caminho) ----------
+  const EVENTOS = {
+    1: { em: 0.6, titulo: "Uma placa fecha a trilha", acontece: "A cancela só abre com a sua resposta." },
+    2: { em: 2, titulo: "Um urso sai do mato!", acontece: "Calma: fique parado, não corra e espere ele seguir o caminho. Enquanto isso, pense rápido." },
+    3: { em: 2.9, titulo: "Uma árvore cai no caminho", acontece: "Ninguém se machucou. Para passar por cima do tronco, responda:" },
+    4: { em: 4, titulo: "Você chegou ao rio", acontece: "O barco está na margem. Responda e suba no barco." },
+    5: { em: 5, titulo: "Fim do rio: hora de desembarcar", acontece: "Você amarra o barco na margem. Antes de seguir a pé:" },
+    6: { em: 5.76, titulo: "Outra placa fecha a trilha", acontece: "A cancela só abre com a sua resposta." },
+    7: { em: 7, titulo: "Um marco na beira da trilha", acontece: "Falta pouco para o topo." },
+    8: { em: 8, titulo: "O mirante", acontece: "Daqui já dá para ver o acampamento. Última pergunta:" },
+  };
+  const etapasEl = document.getElementById("etapas");
+  const resultados = {}, frasesDoCaminho = [];
+  let acolheu = false;
+  const perguntaDo = (L) => NIVEIS[L - 1][L === 1 ? ladoInicial : escolhas[L - 1]];
+  const ICONE_CERTO = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.5 12.5l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const ICONE_ERRO = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+
+  function criarEtapa(L) {
+    const ev = EVENTOS[L], q = perguntaDo(L);
+    const sec = document.createElement("section");
+    sec.className = "etapa"; sec.dataset.em = ev.em; sec.dataset.marco = L;
+    const par = L < 8 ? [baralho[2 * (L - 1)], baralho[2 * (L - 1) + 1]] : null;
+    sec.innerHTML = `<div class="cartao">
+      <h2>${ev.titulo}</h2>
+      <p class="acontece">${ev.acontece}</p>
+      <p class="frase">“${q.frase}”</p>
+      <div class="ops resp"><button class="op" type="button" data-r="mito">Mito</button><button class="op" type="button" data-r="verdade">Verdade</button></div>
+      <div class="resposta" hidden></div>
+      ${par ? `<div class="escolha" hidden>
+        <p>${L === RIO ? "O rio se divide em dois braços, cada um com a sua frase. Por qual você desce?" : "A trilha se divide em dois caminhos, cada um com a sua frase. Qual caminho você segue?"}</p>
+        <div class="caminhos">${par.map((c, i) => `<button class="op caminho" type="button" data-lado="${i ? "dir" : "esq"}"><span class="cit">“${c.t}”</span><small>${c.fonte} · ${c.ramo}</small></button>`).join("")}</div>
+      </div>` : ""}
+      <p class="segue" hidden>${L < 8 ? "Qualquer caminho serve: o importante é seguir a trilha. Role a página para continuar." : "Role até o acampamento."}</p>
+      <p class="meta">Marco ${L} de 8</p>
+    </div>`;
+    etapasEl.appendChild(sec);
+    const cartao = sec.querySelector(".cartao");
+
+    sec.querySelectorAll("[data-r]").forEach((b) => b.addEventListener("click", () => {
+      sec.querySelectorAll("[data-r]").forEach((o) => { o.disabled = true; o.classList.toggle("escolhida", o === b); });
+      const acertou = b.dataset.r === q.certa;
+      cartao.classList.add(acertou ? "certo" : "errado");
+      const resp = sec.querySelector(".resposta");
+      resp.innerHTML = acertou
+        ? `<p class="veredito">${ICONE_CERTO}Correto!</p><p>É ${q.certa}. ${q.exp}</p><p class="ponto">Ponto ${q.ponto} do livro · Capítulo ${q.cap}: ${CAPS[q.cap]}</p>`
+        : `<p class="veredito">${ICONE_ERRO}Não é bem assim.</p><p><b>Correção:</b> é ${q.certa}. ${q.exp}</p><p class="ponto">Para entender melhor: ponto ${q.ponto} do livro · Capítulo ${q.cap}: ${CAPS[q.cap]}</p><p class="nota">Anotado no seu caderno de campo.</p>`;
+      resp.hidden = false;
+      resultados[L] = { acertou, q };
+      if (cancelas[L]) cancelas[L].classList.add("aberta");
+      abrirCaminhos(L);
+      atualizarCaderno();
+      const lista = Object.values(resultados), erros = lista.filter((r) => !r.acertou).length;
+      if (!acolheu && erros >= 3 && erros > lista.length - erros) { acolheu = true; resp.insertAdjacentHTML("afterend", ACOLHE); }
+      if (L < 8) sec.querySelector(".escolha").hidden = false;
+      else { sec.querySelector(".segue").hidden = false; criarFim(); }
+    }));
+    sec.querySelectorAll("[data-lado]").forEach((b) => b.addEventListener("click", () => {
+      sec.querySelectorAll("[data-lado]").forEach((o) => { o.disabled = true; o.classList.toggle("escolhida", o === b); });
+      frasesDoCaminho.push(par[b.dataset.lado === "esq" ? 0 : 1]);
+      seguir(L, b.dataset.lado);
+      if (L === RIO) criarRio();
+      sec.querySelector(".segue").hidden = false;
+      criarEtapa(L + 1);
+      atualizarCaderno();
+    }));
+  }
+  const ACOLHE = `<div class="acolhe">
+    <p><b>Está tudo bem não saber.</b> Ninguém nasce conhecendo os próprios direitos, e é justamente para isso que o Direito na Mochila existe: ajudar o máximo de pessoas que a gente conseguir.</p>
+    <p>Se quiser, faça uma pausa na caminhada e vá direto ao livro. A trilha continua aqui. A caminhada não é sobre chegar rápido, mas chegar.</p>
+    <div class="cta"><a class="btn" href="#chegada">Ir direto ao livro</a></div>
+  </div>`;
+  function criarRio() {
+    const sec = document.createElement("section");
+    sec.className = "etapa longa"; sec.dataset.em = 4.5;
+    sec.innerHTML = `<div class="cartao"><h2>Descendo o rio</h2><p class="acontece">O barco segue pelo seu braço do rio. A correnteza é tranquila: aproveite a paisagem e continue rolando.</p></div>`;
+    etapasEl.appendChild(sec);
+  }
+  function criarFim() {
+    abrirCaminhos(8);
+    const sec = document.createElement("section");
+    sec.className = "etapa"; sec.dataset.em = 9;
+    sec.innerHTML = `<div class="cartao"><h2>Você chegou ao acampamento!</h2><p>Desça a página para ver o seu caderno de campo e baixar o livro.</p></div>`;
+    etapasEl.appendChild(sec);
+  }
+  criarEtapa(1);
+
+  function atualizarCaderno() {
+    const lista = Object.values(resultados), certos = lista.filter((r) => r.acertou).length;
+    document.getElementById("placar").textContent = `${certos} de ${lista.length}`;
+    document.getElementById("resumo").textContent = `Você respondeu ${lista.length} de 8 marcos e acertou ${certos}. Os que você errou viraram anotações.`;
+    const ul = document.getElementById("anotacoes"); ul.innerHTML = "";
+    const erros = lista.filter((r) => !r.acertou);
+    if (!erros.length) { const li = document.createElement("li"); li.textContent = "Nenhum erro até agora. Mesmo assim, o livro tem muito mais."; ul.appendChild(li); }
+    erros.forEach((r) => { const li = document.createElement("li"); li.innerHTML = `<b>Ponto ${r.q.ponto}</b> (capítulo ${r.q.cap}, ${CAPS[r.q.cap]}): “${r.q.frase}” É ${r.q.certa}.`; ul.appendChild(li); });
+    const fr = document.getElementById("frases-caminho"); fr.innerHTML = "";
+    if (!frasesDoCaminho.length) fr.innerHTML = "<li>Escolha os caminhos na trilha para guardar as frases aqui.</li>";
+    frasesDoCaminho.forEach((c) => { const li = document.createElement("li"); li.innerHTML = `“${c.t}” <span class="fonte">${c.fonte}</span>`; fr.appendChild(li); });
+  }
+
+  // ---------- rolagem → posição na trilha ----------
+  let em = 0;
+  function alvo() {
+    const secs = [...etapasEl.querySelectorAll(".etapa")], meio = innerHeight * 0.55;
+    const c = secs.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height * .5; });
+    let v = Number(secs[0].dataset.em);
+    for (let i = 0; i < secs.length - 1; i++) {
+      const a = Number(secs[i].dataset.em), b = Number(secs[i + 1].dataset.em);
+      if (meio >= c[i] && meio <= c[i + 1]) { v = a + (b - a) * ((meio - c[i]) / (c[i + 1] - c[i])); break; }
+      if (meio > c[i + 1]) v = b;
+    }
+    return v;
+  }
+  const svg = document.getElementById("cena");
+  function quadro() {
+    const antes = em, a = alvo();
+    em += (a - em) * (reduzido ? 1 : 0.1);
+    if (Math.abs(a - em) < 0.0005) em = a;
+    const p = ponto(em), s = escala(p.y);
+    const noBarco = em > RIO && em < RIO + 1;
+    coloca(andarilho, p, s, 0, noBarco ? 5 * s : 0);
+    andarilho.classList.toggle("andando", !reduzido && !noBarco && Math.abs(em - antes) > 0.0004);
+    andarilho.classList.toggle("no-barco", noBarco);
+    if (barco) { const pb = em <= RIO ? N[RIO] : em >= RIO + 1 && N[RIO + 1] ? N[RIO + 1] : p; coloca(barco, pb, escala(pb.y)); }
+
+    const perto = Object.keys(olhar).find((k) => Math.abs(em - EVENTOS[k].em) < 0.05);
+    andarilho.classList.toggle("olha-esq", !!perto && olhar[perto] === "esq");
+    andarilho.classList.toggle("olha-dir", !!perto && olhar[perto] === "dir");
+
+    if (urso) {
+      const ursoFoi = !!resultados[2], ursoAqui = em > 1.4 && em < 2.6;
+      coloca(urso, pUrso, sU, (64 + (ursoAqui && !ursoFoi ? -16 : ursoFoi ? 150 : 0)) * ladoUrso, 4, ladoUrso);
+      urso.style.opacity = ursoAqui || (ursoFoi && em < 2.6) ? 1 : 0;
+    }
+    if (arvore) { arvore.classList.toggle("caiu", em > 2.55 && !resultados[3]); arvore.classList.toggle("afastada", !!resultados[3]); }
+
+    // câmera segue quem sobe; no celular chega mais perto e deixa o escoteiro acima do cartão
+    const caixa = svg.getBoundingClientRect();
+    if (caixa.width && caixa.height) {
+      const celular = innerWidth < 900, W = celular ? 260 : 400;
+      const H = Math.min(1100, W * caixa.height / caixa.width), Wv = H * caixa.width / caixa.height;
+      const vx = Math.max(0, Math.min(400 - Wv, p.x - Wv / 2));
+      const vy = Math.max(0, Math.min((celular ? 1400 : 1100) - H, p.y - H * (celular ? 0.3 : 0.58)));
+      svg.setAttribute("viewBox", `${f(vx)} ${f(vy)} ${f(Wv)} ${f(H)}`);
+    }
+    document.getElementById("sol").setAttribute("cy", f(150 + em * 12));
+    requestAnimationFrame(quadro);
+  }
+  requestAnimationFrame(quadro);
+
+  // ---------- escoteiro ou escoteira ----------
+  document.querySelectorAll("[data-quem]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-quem]").forEach((o) => o.classList.toggle("escolhida", o === b));
+    andarilho.classList.toggle("ele", b.dataset.quem === "ele"); andarilho.classList.toggle("ela", b.dataset.quem === "ela");
+  }));
+
+  // ---------- tenho um problema agora ----------
+  const sel = document.getElementById("tema");
+  Object.entries(CAPS).forEach(([n, t]) => { const o = document.createElement("option"); o.textContent = `Capítulo ${n}: ${t}`; sel.appendChild(o); });
+  const abrir = document.getElementById("abrir-problema"), painel = document.getElementById("problema");
+  abrir.addEventListener("click", () => { painel.hidden = !painel.hidden; abrir.setAttribute("aria-expanded", String(!painel.hidden)); });
+
+  document.getElementById("desafiar").addEventListener("click", () => {
+    const lista = Object.values(resultados), certos = lista.filter((r) => r.acertou).length;
+    const texto = `Subi a trilha do Direito na Mochila e acertei ${certos} de ${lista.length} marcos. Você sabe sobre os seus direitos?`;
+    const el = document.getElementById("copiado");
+    const mostra = (t) => { el.textContent = t; el.hidden = false; };
+    try { navigator.clipboard.writeText(texto).then(() => mostra("Copiado!"), () => mostra(texto)); } catch (e) { mostra(texto); }
+  });
+})();
+</script>
+</body>
+</html>
