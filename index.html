@@ -191,6 +191,21 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .abertura h1 { font-size: 30px; }
   .quem svg { width: 40px; height: 52px; }
 }
+
+/* montanha travada: à esquerda no computador (trilha inteira), em cima no celular (cartões rolam embaixo) */
+:root { --topo: 58px; }
+.montanha { top: var(--topo); height: calc(100vh - var(--topo)); height: calc(100svh - var(--topo)); }
+@media (min-width: 900px) {
+  .palco { grid-template-columns: auto minmax(0, 1fr); max-width: 1180px; margin: 0 auto; gap: 24px; }
+  .montanha { width: calc((100svh - var(--topo)) * 0.3636); border-radius: 0 0 14px 14px; }
+  .etapa { min-height: calc(100svh - var(--topo)); }
+}
+@media (max-width: 899px) {
+  .montanha { height: 46vh; height: 46svh; z-index: 3; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .45); }
+  .etapas { margin-top: 0; z-index: 1; padding-bottom: 30svh; }
+  .etapa, .etapa.abre { min-height: 50svh; align-items: flex-start; padding-block: 14px; }
+  .etapa.longa { min-height: 90svh; }
+}
 </style>
 </head>
 <body>
@@ -667,7 +682,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   // ---------- rolagem → posição na trilha ----------
   let em = 0;
   function alvo() {
-    const secs = [...etapasEl.querySelectorAll(".etapa")], meio = innerHeight * 0.55;
+    const secs = [...etapasEl.querySelectorAll(".etapa")], meio = innerHeight * (innerWidth < 900 ? 0.72 : 0.55);
     const c = secs.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height * .5; });
     let v = Number(secs[0].dataset.em);
     for (let i = 0; i < secs.length - 1; i++) {
@@ -704,17 +719,27 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     // câmera segue quem sobe; no celular chega mais perto e deixa o escoteiro acima do cartão
     const caixa = svg.getBoundingClientRect();
     if (caixa.width && caixa.height) {
-      const celular = innerWidth < 900, W = celular ? 260 : 400;
-      const H = Math.min(1100, W * caixa.height / caixa.width), Wv = H * caixa.width / caixa.height;
-      const vx = Math.max(0, Math.min(400 - Wv, p.x - Wv / 2));
-      const vy = Math.max(0, Math.min((celular ? 1400 : 1100) - H, p.y - H * (celular ? 0.3 : 0.58)));
-      svg.setAttribute("viewBox", `${f(vx)} ${f(vy)} ${f(Wv)} ${f(H)}`);
+      if (innerWidth >= 900) svg.setAttribute("viewBox", "0 0 400 1100"); // computador: a trilha inteira, parada
+      else {
+        // celular: a montanha fica na metade de cima e a câmera segue quem sobe
+        const W = 280, H = Math.min(1100, W * caixa.height / caixa.width), Wv = H * caixa.width / caixa.height;
+        const vx = Math.max(0, Math.min(400 - Wv, p.x - Wv / 2));
+        const vy = Math.max(0, Math.min(1400 - H, p.y - H * 0.6));
+        svg.setAttribute("viewBox", `${f(vx)} ${f(vy)} ${f(Wv)} ${f(H)}`);
+      }
     }
     document.getElementById("sol").setAttribute("cy", f(150 + em * 12));
     requestAnimationFrame(quadro);
   }
   requestAnimationFrame(quadro);
 
+
+
+  // altura do topo, para a montanha ficar logo abaixo dele
+  const topo = document.querySelector(".topo");
+  const medeTopo = () => document.documentElement.style.setProperty("--topo", topo.offsetHeight + "px");
+  medeTopo(); addEventListener("resize", medeTopo);
+  new ResizeObserver(medeTopo).observe(topo);
 
   // ---------- caderno de campo: segunda tela, separada da trilha ----------
   const palco = document.querySelector(".palco"), chegada = document.getElementById("chegada");
