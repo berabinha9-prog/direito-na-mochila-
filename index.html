@@ -168,7 +168,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
 /* cartão enxuto: depois de responder some o botão de resposta; depois de escolher, some a outra frase */
 .cartao.respondido .resp { display: none; }
 .cartao.respondido .acontece { display: none; }
-.cartao.seguiu .escolha > p, .cartao.seguiu .op.caminho:not(.escolhida) { display: none; }
+.cartao.seguiu > p:not(.segue), .cartao.seguiu .op.caminho:not(.escolhida) { display: none; }
 .voltar { justify-self: start; }
 .chegada { min-height: 100vh; min-height: 100svh; }
 
@@ -196,15 +196,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 :root { --topo: 58px; }
 .montanha { top: var(--topo); height: calc(100vh - var(--topo)); height: calc(100svh - var(--topo)); }
 @media (min-width: 900px) {
+  .etapa.curta { min-height: 0; padding-block: 0 24px; }
   .palco { grid-template-columns: auto minmax(0, 1fr); max-width: 1180px; margin: 0 auto; gap: 24px; }
   .montanha { width: calc((100svh - var(--topo)) * 0.3636); border-radius: 0 0 14px 14px; }
   .etapa { min-height: calc(100svh - var(--topo)); }
 }
 @media (max-width: 899px) {
-  .montanha { height: 46vh; height: 46svh; z-index: 3; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .45); }
-  .etapas { margin-top: 0; z-index: 1; padding-bottom: 30svh; }
-  .etapa, .etapa.abre { min-height: 50svh; align-items: flex-start; padding-block: 14px; }
-  .etapa.longa { min-height: 90svh; }
+  /* a página termina no fim do cartão atual: nada passa por baixo da montanha sem ser lido */
+  .montanha { height: var(--cena, 46svh); z-index: 3; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .45); transition: height .4s var(--saida); }
+  .etapas { margin-top: 0; z-index: 1; padding-bottom: 14px; }
+  .etapa { min-height: 60svh; align-items: flex-end; padding-block: 14px 0; }
+  .etapa.abre { min-height: 0; padding-top: 14px; }
+  .etapa.curta { min-height: 0; }
+  .etapa.longa { min-height: 100svh; }
 }
 </style>
 </head>
@@ -596,25 +600,23 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   const ICONE_CERTO = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.5 12.5l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const ICONE_ERRO = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M8 8l8 8M16 8l-8 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>`;
 
+  function secao(em, html, extra = "") {
+    const sec = document.createElement("section");
+    sec.className = "etapa " + extra; sec.dataset.em = em;
+    sec.innerHTML = `<div class="cartao">${html}</div>`;
+    etapasEl.appendChild(sec);
+    return sec;
+  }
   function criarEtapa(L) {
     const ev = EVENTOS[L], q = perguntaDo(L);
-    const sec = document.createElement("section");
-    sec.className = "etapa"; sec.dataset.em = ev.em; sec.dataset.marco = L;
-    const par = L < 8 ? [baralho[2 * (L - 1)], baralho[2 * (L - 1) + 1]] : null;
-    sec.innerHTML = `<div class="cartao">
+    const sec = secao(ev.em, `
       <h2>${ev.titulo}</h2>
       <p class="acontece">${ev.acontece}</p>
       <p class="frase">“${q.frase}”</p>
       <div class="ops resp"><button class="op" type="button" data-r="mito">Mito</button><button class="op" type="button" data-r="verdade">Verdade</button></div>
       <div class="resposta" hidden></div>
-      ${par ? `<div class="escolha" hidden>
-        <p>${L === RIO ? "O rio se divide. Por qual braço você desce?" : "A trilha se divide. Qual caminho você segue?"}</p>
-        <div class="caminhos">${par.map((c, i) => `<button class="op caminho" type="button" data-lado="${i ? "dir" : "esq"}"><span class="cit">“${c.t}”</span><small>${c.fonte} · ${c.ramo}</small></button>`).join("")}</div>
-      </div>` : ""}
-      <p class="segue" hidden>O importante é seguir a trilha. Role para continuar.</p>
-      <p class="meta">Marco ${L} de 8</p>
-    </div>`;
-    etapasEl.appendChild(sec);
+      <p class="meta">Marco ${L} de 8</p>`);
+    sec.dataset.marco = L;
     const cartao = sec.querySelector(".cartao");
 
     sec.querySelectorAll("[data-r]").forEach((b) => b.addEventListener("click", () => {
@@ -631,10 +633,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
       abrirCaminhos(L);
       atualizarCaderno();
       const lista = Object.values(resultados), erros = lista.filter((r) => !r.acertou).length;
-      if (!acolheu && erros >= 3 && erros > lista.length - erros) { acolheu = true; resp.insertAdjacentHTML("afterend", ACOLHE); }
-      if (L < 8) sec.querySelector(".escolha").hidden = false;
-      else criarFim();
+      if (!acolheu && erros >= 3 && erros > lista.length - erros) { acolheu = true; secao(ev.em, ACOLHE, "curta"); }
+      if (L < 8) criarEscolha(L, ev.em); else criarFim();
     }));
+  }
+  // a bifurcação é um cartão separado, logo abaixo da resposta: a página só cresce um passo por vez
+  function criarEscolha(L, em) {
+    const par = [baralho[2 * (L - 1)], baralho[2 * (L - 1) + 1]];
+    const sec = secao(em, `
+      <h2>${L === RIO ? "O rio se divide" : "A trilha se divide"}</h2>
+      <p>${L === RIO ? "Por qual braço você desce?" : "Qual caminho você segue?"}</p>
+      <div class="caminhos">${par.map((c, i) => `<button class="op caminho" type="button" data-lado="${i ? "dir" : "esq"}"><span class="cit">“${c.t}”</span><small>${c.fonte} · ${c.ramo}</small></button>`).join("")}</div>
+      <p class="segue" hidden>O importante é seguir a trilha. Role para continuar.</p>`, "curta");
+    const cartao = sec.querySelector(".cartao");
     sec.querySelectorAll("[data-lado]").forEach((b) => b.addEventListener("click", () => {
       sec.querySelectorAll("[data-lado]").forEach((o) => { o.disabled = true; o.classList.toggle("escolhida", o === b); });
       cartao.classList.add("seguiu");
@@ -651,6 +662,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     <p>Se quiser, faça uma pausa na caminhada e vá direto ao livro. A trilha continua aqui. A caminhada não é sobre chegar rápido, mas chegar.</p>
     <div class="cta"><a class="btn abre-caderno" href="#chegada">Ir direto ao livro</a></div>
   </div>`;
+  // no celular, depois de cada clique o fim do cartão desce até a borda da tela
+  function mostraFim(el) { if (innerWidth < 900) requestAnimationFrame(() => setTimeout(() => el.scrollIntoView({ block: "end", behavior: reduzido ? "auto" : "smooth" }), 60)); }
   function criarRio() {
     const sec = document.createElement("section");
     sec.className = "etapa longa"; sec.dataset.em = 4.5;
@@ -680,7 +693,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   }
 
   // ---------- rolagem → posição na trilha ----------
-  let em = 0;
+  let em = 0, ultimaCena = 0;
   function alvo() {
     const secs = [...etapasEl.querySelectorAll(".etapa")], meio = innerHeight * (innerWidth < 900 ? 0.72 : 0.55);
     const c = secs.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height * .5; });
@@ -695,6 +708,15 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   const svg = document.getElementById("cena");
   function quadro() {
     if (palco.hidden) { requestAnimationFrame(quadro); return; }
+    if (innerWidth < 900) {
+      // a montanha encolhe até caber inteiro o maior cartão do passo atual
+      const alto = topo.offsetHeight;
+      // cartões do passo atual: a última pergunta e o que veio depois dela (acolhimento, bifurcação, acampamento)
+      const secs = [...etapasEl.querySelectorAll(".etapa")], i = secs.findLastIndex((e) => e.dataset.marco);
+      const maior = Math.max(200, ...secs.slice(Math.max(0, i)).map((e) => e.querySelector(".cartao").offsetHeight));
+      const cena = Math.round(Math.max(innerHeight * 0.26, Math.min(innerHeight * 0.5, innerHeight - alto - maior - 28)));
+      if (cena !== ultimaCena) { ultimaCena = cena; document.documentElement.style.setProperty("--cena", cena + "px"); }
+    }
     const antes = em, a = alvo();
     em += (a - em) * (reduzido ? 1 : 0.1);
     if (Math.abs(a - em) < 0.0005) em = a;
