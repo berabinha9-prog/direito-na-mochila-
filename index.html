@@ -164,6 +164,13 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
 .op.caminho .cit { font-family: var(--display); font-weight: 700; font-size: 17px; line-height: 1.3; }
 .caderno .fonte { color: var(--suave); font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .cartao.certo .veredito svg { animation: none; } }
+
+/* cartão enxuto: depois de responder some o botão de resposta; depois de escolher, some a outra frase */
+.cartao.respondido .resp { display: none; }
+.cartao.respondido .acontece { display: none; }
+.cartao.seguiu .escolha > p, .cartao.seguiu .op.caminho:not(.escolhida) { display: none; }
+.voltar { justify-self: start; }
+.chegada { min-height: 100vh; min-height: 100svh; }
 </style>
 </head>
 <body>
@@ -173,7 +180,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
     <a class="marca" href="#inicio">Direito na Mochila</a>
     <nav>
       <button class="btn contorno" type="button" id="abrir-problema" aria-expanded="false" aria-controls="problema">Tenho um problema<span class="so-pc">&nbsp;agora</span></button>
-      <a class="btn" href="#chegada">Livro <span class="so-pc">gratuito</span><span class="so-cel">grátis</span></a>
+      <a class="btn abre-caderno" href="#chegada">Livro <span class="so-pc">gratuito</span><span class="so-cel">grátis</span></a>
     </nav>
   </div>
   <div class="problema" id="problema" hidden>
@@ -232,8 +239,9 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
     </div>
   </div>
 
-  <section class="chegada lateral" id="chegada">
+  <section class="chegada lateral" id="chegada" hidden>
     <div class="dentro">
+      <button class="btn contorno voltar" type="button" id="voltar-trilha">← Voltar para a trilha</button>
       <h2>Seu caderno de campo</h2>
       <div class="placar" id="placar">0 de 0</div>
       <p id="resumo">Suba a trilha e responda os marcos para ver o seu resultado aqui.</p>
@@ -568,7 +576,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
         <p>${L === RIO ? "O rio se divide em dois braços, cada um com a sua frase. Por qual você desce?" : "A trilha se divide em dois caminhos, cada um com a sua frase. Qual caminho você segue?"}</p>
         <div class="caminhos">${par.map((c, i) => `<button class="op caminho" type="button" data-lado="${i ? "dir" : "esq"}"><span class="cit">“${c.t}”</span><small>${c.fonte} · ${c.ramo}</small></button>`).join("")}</div>
       </div>` : ""}
-      <p class="segue" hidden>${L < 8 ? "Qualquer caminho serve: o importante é seguir a trilha. Role a página para continuar." : "Role até o acampamento."}</p>
+      <p class="segue" hidden>Qualquer caminho serve: o importante é seguir a trilha. Role a página para continuar.</p>
       <p class="meta">Marco ${L} de 8</p>
     </div>`;
     etapasEl.appendChild(sec);
@@ -577,7 +585,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
     sec.querySelectorAll("[data-r]").forEach((b) => b.addEventListener("click", () => {
       sec.querySelectorAll("[data-r]").forEach((o) => { o.disabled = true; o.classList.toggle("escolhida", o === b); });
       const acertou = b.dataset.r === q.certa;
-      cartao.classList.add(acertou ? "certo" : "errado");
+      cartao.classList.add(acertou ? "certo" : "errado", "respondido");
       const resp = sec.querySelector(".resposta");
       resp.innerHTML = acertou
         ? `<p class="veredito">${ICONE_CERTO}Correto!</p><p>É ${q.certa}. ${q.exp}</p><p class="ponto">Ponto ${q.ponto} do livro · Capítulo ${q.cap}: ${CAPS[q.cap]}</p>`
@@ -590,10 +598,11 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
       const lista = Object.values(resultados), erros = lista.filter((r) => !r.acertou).length;
       if (!acolheu && erros >= 3 && erros > lista.length - erros) { acolheu = true; resp.insertAdjacentHTML("afterend", ACOLHE); }
       if (L < 8) sec.querySelector(".escolha").hidden = false;
-      else { sec.querySelector(".segue").hidden = false; criarFim(); }
+      else criarFim();
     }));
     sec.querySelectorAll("[data-lado]").forEach((b) => b.addEventListener("click", () => {
       sec.querySelectorAll("[data-lado]").forEach((o) => { o.disabled = true; o.classList.toggle("escolhida", o === b); });
+      cartao.classList.add("seguiu");
       frasesDoCaminho.push(par[b.dataset.lado === "esq" ? 0 : 1]);
       seguir(L, b.dataset.lado);
       if (L === RIO) criarRio();
@@ -605,7 +614,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
   const ACOLHE = `<div class="acolhe">
     <p><b>Está tudo bem não saber.</b> Ninguém nasce conhecendo os próprios direitos, e é justamente para isso que o Direito na Mochila existe: ajudar o máximo de pessoas que a gente conseguir.</p>
     <p>Se quiser, faça uma pausa na caminhada e vá direto ao livro. A trilha continua aqui. A caminhada não é sobre chegar rápido, mas chegar.</p>
-    <div class="cta"><a class="btn" href="#chegada">Ir direto ao livro</a></div>
+    <div class="cta"><a class="btn abre-caderno" href="#chegada">Ir direto ao livro</a></div>
   </div>`;
   function criarRio() {
     const sec = document.createElement("section");
@@ -617,7 +626,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
     abrirCaminhos(8);
     const sec = document.createElement("section");
     sec.className = "etapa"; sec.dataset.em = 9;
-    sec.innerHTML = `<div class="cartao"><h2>Você chegou ao acampamento!</h2><p>Desça a página para ver o seu caderno de campo e baixar o livro.</p></div>`;
+    sec.innerHTML = `<div class="cartao"><h2>Você chegou ao acampamento!</h2><p>A trilha terminou. Seu caderno de campo tem o resultado, o que ler no livro e as frases do seu caminho.</p><div class="cta"><a class="btn abre-caderno" href="#chegada">Abrir meu caderno de campo</a></div></div>`;
     etapasEl.appendChild(sec);
   }
   criarEtapa(1);
@@ -650,6 +659,7 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
   }
   const svg = document.getElementById("cena");
   function quadro() {
+    if (palco.hidden) { requestAnimationFrame(quadro); return; }
     const antes = em, a = alvo();
     em += (a - em) * (reduzido ? 1 : 0.1);
     if (Math.abs(a - em) < 0.0005) em = a;
@@ -684,6 +694,24 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
     requestAnimationFrame(quadro);
   }
   requestAnimationFrame(quadro);
+
+
+  // ---------- caderno de campo: segunda tela, separada da trilha ----------
+  const palco = document.querySelector(".palco"), chegada = document.getElementById("chegada");
+  let yTrilha = 0;
+  function abrirCaderno(e) {
+    if (e) e.preventDefault();
+    if (!chegada.hidden) return;
+    yTrilha = scrollY; palco.hidden = true; chegada.hidden = false;
+    document.getElementById("voltar-trilha").textContent = resultados[8] ? "← Caminhar de novo" : "← Voltar para a trilha";
+    scrollTo({ top: 0, behavior: "instant" });
+  }
+  document.addEventListener("click", (e) => { const a = e.target.closest(".abre-caderno"); if (a) abrirCaderno(e); });
+  document.getElementById("voltar-trilha").addEventListener("click", () => {
+    if (resultados[8]) { location.reload(); return; }
+    chegada.hidden = true; palco.hidden = false;
+    scrollTo({ top: yTrilha, behavior: "instant" });
+  });
 
   // ---------- escoteiro ou escoteira ----------
   document.querySelectorAll("[data-quem]").forEach((b) => b.addEventListener("click", () => {
