@@ -171,6 +171,26 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
 .cartao.seguiu .escolha > p, .cartao.seguiu .op.caminho:not(.escolhida) { display: none; }
 .voltar { justify-self: start; }
 .chegada { min-height: 100vh; min-height: 100svh; }
+
+/* celular: tudo mais compacto (Chrome do Android não infla o texto) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@media (max-width: 899px) {
+  body { font-size: 16px; line-height: 1.45; }
+  .cartao { padding: 14px 14px 12px; gap: 8px; border-radius: 12px; }
+  .cartao h2 { font-size: 19px; }
+  .frase { font-size: 17px; }
+  .acontece, .ponto { font-size: 15px; }
+  .nota, .meta, .op small { font-size: 13px; }
+  .veredito { font-size: 19px; gap: 8px; }
+  .veredito svg { width: 22px; height: 22px; }
+  .resposta, .escolha { gap: 6px; padding-top: 8px; }
+  .op { padding: 10px 8px; font-size: 15px; }
+  .op.caminho { padding: 9px 11px; }
+  .op.caminho .cit { font-size: 15px; }
+  .caminhos { gap: 6px; }
+  .abertura h1 { font-size: 30px; }
+  .quem svg { width: 40px; height: 52px; }
+}
 </style>
 </head>
 <body>
@@ -573,10 +593,10 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
       <div class="ops resp"><button class="op" type="button" data-r="mito">Mito</button><button class="op" type="button" data-r="verdade">Verdade</button></div>
       <div class="resposta" hidden></div>
       ${par ? `<div class="escolha" hidden>
-        <p>${L === RIO ? "O rio se divide em dois braços, cada um com a sua frase. Por qual você desce?" : "A trilha se divide em dois caminhos, cada um com a sua frase. Qual caminho você segue?"}</p>
+        <p>${L === RIO ? "O rio se divide. Por qual braço você desce?" : "A trilha se divide. Qual caminho você segue?"}</p>
         <div class="caminhos">${par.map((c, i) => `<button class="op caminho" type="button" data-lado="${i ? "dir" : "esq"}"><span class="cit">“${c.t}”</span><small>${c.fonte} · ${c.ramo}</small></button>`).join("")}</div>
       </div>` : ""}
-      <p class="segue" hidden>Qualquer caminho serve: o importante é seguir a trilha. Role a página para continuar.</p>
+      <p class="segue" hidden>O importante é seguir a trilha. Role para continuar.</p>
       <p class="meta">Marco ${L} de 8</p>
     </div>`;
     etapasEl.appendChild(sec);
@@ -588,8 +608,8 @@ span.btn[aria-disabled] { opacity: .75; cursor: default; }
       cartao.classList.add(acertou ? "certo" : "errado", "respondido");
       const resp = sec.querySelector(".resposta");
       resp.innerHTML = acertou
-        ? `<p class="veredito">${ICONE_CERTO}Correto!</p><p>É ${q.certa}. ${q.exp}</p><p class="ponto">Ponto ${q.ponto} do livro · Capítulo ${q.cap}: ${CAPS[q.cap]}</p>`
-        : `<p class="veredito">${ICONE_ERRO}Não é bem assim.</p><p><b>Correção:</b> é ${q.certa}. ${q.exp}</p><p class="ponto">Para entender melhor: ponto ${q.ponto} do livro · Capítulo ${q.cap}: ${CAPS[q.cap]}</p><p class="nota">Anotado no seu caderno de campo.</p>`;
+        ? `<p class="veredito">${ICONE_CERTO}Correto!</p><p>É ${q.certa}. ${q.exp}</p><p class="ponto">Leia o ponto ${q.ponto} do livro (cap. ${q.cap}, ${CAPS[q.cap]})</p>`
+        : `<p class="veredito">${ICONE_ERRO}Não é bem assim.</p><p><b>Correção:</b> é ${q.certa}. ${q.exp}</p><p class="ponto">Leia o ponto ${q.ponto} do livro (cap. ${q.cap}, ${CAPS[q.cap]}). Anotado no seu caderno.</p>`;
       resp.hidden = false;
       resultados[L] = { acertou, q };
       if (cancelas[L]) cancelas[L].classList.add("aberta");
