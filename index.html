@@ -389,7 +389,7 @@ body[data-tela="trilha"] .rodape { display: none; }
           <path d="M0 300 L40 262 L78 284 L118 236 L150 268 L170 250 L200 290 L400 290 L400 1400 L0 1400z" fill="#c4d6c9"/>
           <path d="M300 300 L330 252 L352 270 L378 238 L400 256 L400 1400 L300 1400z" fill="#c4d6c9"/>
           <!-- a montanha da trilha -->
-          <path d="M0 340 C80 300 150 176 200 120 C214 104 238 104 252 120 C300 172 345 268 400 294 L400 1400 L0 1400z" fill="#a9c3a4"/>
+          <path id="monte" d="M0 340 C80 300 150 176 200 120 C214 104 238 104 252 120 C300 172 345 268 400 294 L400 1400 L0 1400z" fill="#a9c3a4"/>
           <path d="M226 106 C214 104 204 112 200 120 C150 176 80 300 0 340 L0 420 C70 380 140 250 226 106z" fill="url(#luz)"/>
           <path d="M226 106 C240 140 236 170 252 200 C262 222 280 236 286 262 C300 250 330 280 360 286 C330 262 296 196 252 120 C244 110 236 106 226 106z" fill="#94b190"/>
           <g id="arauc-longe" fill="#7d9e86"></g>
@@ -761,15 +761,29 @@ body[data-tela="trilha"] .rodape { display: none; }
   mk("path", { d: `M-40 752 L${F.x} ${F.y}`, stroke: "#a9d6e2", "stroke-width": 1.6, fill: "none", "stroke-dasharray": "6 14" }, gAgua);
   const naMargem = (x) => { const t = (x + 40) / (F.x + 40); return { x, y: 752 + (F.y - 752) * t }; };
 
-  function trecho(a, b, extra = 0) {
+  function trecho(a, b, extra = 0, sorte = 1) {
     // sai e chega em cada marco na vertical (a cancela fecha a passagem); a curva no meio dá a cara de trilha
-    const h = Math.abs(b.y - a.y) * 0.55, w = (Math.random() - .5) * 30;
+    const h = Math.abs(b.y - a.y) * 0.55, w = (Math.random() - .5) * 30 * sorte;
     let d = `M${f(a.x)} ${f(a.y)} C${f(a.x + w)} ${f(a.y - h)} ${f(b.x - w)} ${f(b.y + h)} ${f(b.x)} ${f(b.y)}`;
     if (extra) d += ` C${f(b.x)} ${f(b.y - extra * .5)} ${f(b.x + (b.x < 200 ? -30 : 30))} ${f(b.y - extra)} ${f(b.x + (b.x < 200 ? -45 : 45))} ${f(b.y - extra * 1.3)}`;
     return d;
   }
   const traca = (d, y) => mk("path", { d, stroke: "#efe0b2", "stroke-width": largura(y), fill: "none", "stroke-linecap": "round", class: "ramo" }, gTrilhas);
   const invisivel = (d) => mk("path", { d, fill: "none", stroke: "none" }, gTrilhas);
+  // a trilha nunca sai da montanha: cada caminho é conferido contra o contorno do morro
+  const monte = $("#monte"), teste = invisivel("M0 0");
+  const noMonte = (x, y) => monte.isPointInFill(new DOMPoint(x, y));
+  function faixa(y, folga) { let lo = 400, hi = 0; for (let x = 0; x <= 400; x += 2) if (noMonte(x, y)) { lo = Math.min(lo, x); hi = Math.max(hi, x); } return [lo + folga, hi - folga]; }
+  function cabe(d) {
+    teste.setAttribute("d", d);
+    const L = teste.getTotalLength();
+    for (let i = 0; i <= 40; i++) { const q = teste.getPointAtLength(L * i / 40), m = largura(q.y) / 2 + 4; if (!noMonte(q.x - m, q.y) || !noMonte(q.x + m, q.y)) return false; }
+    return true;
+  }
+  function trechoNoMonte(a, b, extra = 0) {
+    for (let i = 0; i < 40; i++) { const d = trecho(a, b, extra, i < 30 ? 1 : 0); if (cabe(d)) return d; }
+    return extra > 10 ? trechoNoMonte(a, b, extra / 2) : trecho(a, b, 0, 0);
+  }
 
   // cada trecho guarda pontos já medidos ao longo do caminho, para não medir a cada quadro
   const trechos = { 0: { u: traca(trecho(N[0], N[1]), 1046) } };
@@ -797,14 +811,18 @@ body[data-tela="trilha"] .rodape { display: none; }
       destinos[k] = { esq: BRACO.esq.fim, dir: BRACO.dir.fim };
       trechos[k] = t; return;
     }
-    if (k === 8) { trechos[8] = { u: traca(trecho(a, ACAMP), 170) }; return; }
+    if (k === 8) { trechos[8] = { u: traca(trechoNoMonte(a, ACAMP), 170) }; return; }
     const delta = 75 + Math.random() * 35;
     let xe = a.x - delta, xd = a.x + delta;
     if (k === 3) { xe = Math.max(20, Math.min(110, xe)); xd = Math.max(xe + 90, Math.min(220, xd)); }
-    else { if (xe < 45) { xe = 45; xd = Math.max(xd, 150); } if (xd > 355) { xd = 355; xe = Math.min(xe, 250); } }
+    else {
+      const [lo, hi] = faixa(Y[k + 1] - 50, 18), meio = (lo + hi) / 2, vao = Math.min(100, (hi - lo) * 0.6);
+      if (xe < lo) { xe = lo; xd = Math.max(xd, lo + vao); } if (xd > hi) { xd = hi; xe = Math.min(xe, hi - vao); }
+      if (k + 1 === 8) { xe = Math.max(xe, lo); xd = Math.min(xd, hi); if (xd - xe < vao) { xe = meio - vao / 2; xd = meio + vao / 2; } }
+    }
     const dest = k === 3 ? { esq: naMargem(xe), dir: naMargem(xd) } : { esq: { x: xe, y: Y[k + 1] }, dir: { x: xd, y: Y[k + 1] } };
     destinos[k] = dest;
-    trechos[k] = { esq: traca(trecho(a, dest.esq), (a.y + dest.esq.y) / 2), dir: traca(trecho(a, dest.dir), (a.y + dest.dir.y) / 2) };
+    trechos[k] = { esq: traca(trechoNoMonte(a, dest.esq), (a.y + dest.esq.y) / 2), dir: traca(trechoNoMonte(a, dest.dir), (a.y + dest.dir.y) / 2) };
   }
   function seguir(k, lado) {
     escolhas[k] = lado;
@@ -813,7 +831,7 @@ body[data-tela="trilha"] .rodape { display: none; }
     if (k !== RIO) {
       // o caminho que você não seguiu continua para o seu próprio destino e some na mata
       const t = trechos[k][outro], dest = destinos[k][outro];
-      t.setAttribute("d", trecho(N[k], dest, 70)); t.style.opacity = .22;
+      t.setAttribute("d", trechoNoMonte(N[k], dest, 70)); t.style.opacity = .22;
     }
     montarMarco(k + 1);
   }
