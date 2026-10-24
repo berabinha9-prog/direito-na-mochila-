@@ -269,6 +269,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .caminhada a { font-weight: 700; color: var(--mata); font-size: 16px; }
 .frases-lista { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
 .frases-lista span { color: var(--suave); font-size: 15px; }
+.sugere .email { color: var(--suave); font-size: 15px; overflow-wrap: anywhere; }
 .creditos { color: var(--suave); font-size: 15px; border-top: 1px solid var(--linha); padding-top: 18px; }
 </style>
 </head>
@@ -394,7 +395,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const ico = (id, cls = "icone") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
   const SITE = /github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://berabinha9-prog.github.io/direito-na-mochila-/";
-  const PDF = ""; // quando o livro estiver pronto, coloque aqui o endereço do PDF
+  const PDF = "";
+  const EMAIL = "direitonamochila01@gmail.com";
+  const sugestao = () => `<section class="bloco sugere"><h2>Sentiu falta de algum assunto?</h2><p>Mande a sua sugestão. Talvez ela entre numa atualização do livro, sem promessa de data.</p><div class="acoes"><a class="btn contorno" href="mailto:${EMAIL}?subject=${encodeURIComponent("Sugestão para o Direito na Mochila")}">Sugerir um tema</a><span class="email">${EMAIL}</span></div></section>`; // quando o livro estiver pronto, coloque aqui o endereço do PDF
   const botaoPdf = (texto = "Baixar o livro em PDF (grátis)") => PDF
     ? `<a class="btn" href="${PDF}" download>${ico("livro")}${texto}</a>`
     : `<span class="btn" aria-disabled="true">${ico("livro")}Livro em PDF: grátis, em breve</span>`;
@@ -973,7 +976,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
         return `<li><a href="#ajuda/${c.n}"><span class="num">${c.n}</span><span class="t">${esc(c.nome)}</span><span class="d">${esc(ex)}</span><svg class="seta"><use href="#i-seta"/></svg></a></li>`;
       }).join("")}</ul></div>
       <div class="onde"><h2>Onde buscar ajuda</h2>${ONDE.map(([q, r, pt]) => `<details><summary>${q}</summary><div class="corpo"><p>${r}</p><a class="ler-ponto" href="#ponto/${pt}">Ler o ponto ${pt} ›</a></div></details>`).join("")}</div>
-      ${faixaLivro("O livro inteiro, de graça", "São 16 capítulos e 108 pontos como esses, com passo a passo, macetes e onde buscar ajuda em Curitiba.")}`;
+      ${faixaLivro("O livro inteiro, de graça", "São 16 capítulos e 108 pontos como esses, com passo a passo, macetes e onde buscar ajuda em Curitiba.")}
+      ${sugestao()}`;
     const busca = $("#busca"), achados = $("#achados"), temas = $("#temas");
     const procura = () => {
       const q = semAcento(busca.value.trim()); buscaAtual = busca.value;
@@ -1027,6 +1031,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
       ${lista.length ? `<section class="bloco"><h2>As paradas do seu caminho</h2><ol class="caminhada">${lista.map((r) => `<li><svg class="${r.acertou ? "certo" : "errado"}"><use href="#i-${r.acertou ? "certo" : "erro"}"/></svg><span class="f">“${esc(r.q.frase)}”</span><span class="x">É ${r.q.certa}. ${esc(r.q.exp)}</span><a href="#ponto/${r.q.ponto}">Ler o ponto ${r.q.ponto} ›</a></li>`).join("")}</ol></section>` : ""}
       ${frasesDoCaminho.length ? `<section class="bloco"><h2>As lições que você seguiu</h2><ul class="frases-lista">${frasesDoCaminho.map((c) => `<li>“${esc(c.t)}” <span>${esc(c.fonte)}</span></li>`).join("")}</ul></section>` : ""}
       ${fim ? `<div class="acoes"><button class="btn contorno" type="button" id="de-novo">Caminhar de novo</button></div><p class="lead">Ninguém se banha duas vezes no mesmo rio: cada caminhada sorteia paradas e caminhos diferentes.</p>` : ""}
+      ${sugestao()}
       <p><a href="#ajuda">Tem um problema de verdade? Veja a ajuda por assunto ›</a></p>
       <p class="creditos">Um projeto do Grupo Escoteiro Santos Dumont, 20º Curitiba PR, fundado em 1958. O livro é gratuito e não substitui a orientação de um advogado ou da Defensoria Pública.</p>`;
     $("#compartilhar").addEventListener("click", async () => {
