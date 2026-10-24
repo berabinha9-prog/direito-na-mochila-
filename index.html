@@ -410,7 +410,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   const SITE = /github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://berabinha9-prog.github.io/direito-na-mochila-/";
   const PDF = "";
   const EMAIL = "direitonamochila01@gmail.com";
-  const sugestao = () => `<section class="bloco sugere"><h2>Sentiu falta de algum assunto?</h2><p>Mande a sua sugestão. Talvez ela entre numa atualização do livro, sem promessa de data.</p><div class="acoes"><a class="btn contorno" href="mailto:${EMAIL}?subject=${encodeURIComponent("Sugestão para o Direito na Mochila")}">Sugerir um tema</a><span class="email">${EMAIL}</span></div></section>`; // quando o livro estiver pronto, coloque aqui o endereço do PDF
+  const sugestao = () => `<section class="bloco sugere"><h2>Sentiu falta de algum assunto?</h2><p>Mande a sua sugestão.</p><div class="acoes"><a class="btn contorno" href="mailto:${EMAIL}?subject=${encodeURIComponent("Sugestão para o Direito na Mochila")}">Sugerir um tema</a><span class="email">${EMAIL}</span></div></section>`; // quando o livro estiver pronto, coloque aqui o endereço do PDF
   const botaoPdf = (texto = "Baixar o livro em PDF (grátis)") => PDF
     ? `<a class="btn" href="${PDF}" download>${ico("livro")}${texto}</a>`
     : `<span class="btn" aria-disabled="true">${ico("livro")}Livro em PDF: grátis, em breve</span>`;
