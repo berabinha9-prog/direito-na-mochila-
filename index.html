@@ -129,6 +129,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .quem { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .quem .op { padding: 6px 4px 8px; gap: 2px; font-size: 14px; min-height: 0; }
 .quem svg { width: 44px; height: 62px; display: block; }
+.genero { display: flex; flex-wrap: wrap; gap: 6px; }
+.genero button { font: 700 15px/1.2 var(--texto); padding: 8px 13px; min-height: 40px; border-radius: 999px; border: 2px solid var(--linha-forte); background: transparent; color: var(--tinta); cursor: pointer; }
+.genero button:hover { border-color: var(--mata); }
+.genero button[aria-checked="true"] { background: var(--botao); border-color: var(--botao); color: #fffdf7; }
+@media (max-width: 420px) { .genero { flex-wrap: nowrap; gap: 5px; } .genero button { font-size: 14px; padding: 7px 10px; } }
+.quem.todos { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.quem.todos .op { font-size: 13px; }
+.quem.todos svg { width: 38px; height: 54px; }
 .quem .op.escolhida { background: color-mix(in srgb, var(--mata) 12%, var(--folha)); color: var(--tinta); border-color: var(--mata); }
 .atalho { font-size: 15.5px; color: var(--suave); }
 .atalho a { color: var(--erro); font-weight: 700; }
@@ -366,7 +374,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
         <div class="cartao abertura">
           <h1>Você sabe sobre os seus <em>direitos?</em></h1>
           <p class="sub">Suba a trilha até o acampamento. Em cada parada, uma frase do livro <b>Direito na Mochila</b>: mito ou verdade? Depois, uma lição escoteira escolhe o seu caminho.</p>
-          <p class="quem-titulo">Quem sobe a trilha hoje?</p>
+          <p class="quem-titulo" id="quem-titulo">Quem sobe a trilha hoje?</p>
+          <div class="genero" role="radiogroup" aria-labelledby="quem-titulo">
+            <button type="button" role="radio" aria-checked="false" data-g="f">Mulher</button>
+            <button type="button" role="radio" aria-checked="false" data-g="m">Homem</button>
+            <button type="button" role="radio" aria-checked="false" data-g="todos">Prefiro não informar</button>
+          </div>
           <div class="quem" id="quem"></div>
           <p class="segue"><svg class="icone"><use href="#i-baixo"/></svg>Role a página para começar a subir.</p>
           <p class="atalho">Veio com um problema de verdade? <a href="#ajuda">Vá direto para a ajuda</a>.</p>
@@ -521,14 +534,20 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   ].map(([t, fonte, ramo]) => ({ t, fonte, ramo }));
   const baralho = sorteia(FRASES); // 14 por caminhada (2 em cada uma das 7 bifurcações), sem repetir
 
-  // ---------- os 6 personagens (vistos de costas, todos com a sua mochila) ----------
+  // ---------- os personagens: 6 idades, versão feminina e masculina (vistos de costas, todos com a sua mochila) ----------
   const PERSONAGENS = [
-    { id: "crianca", idade: "6 a 10 anos", L: 10, T: 12, r: 5.8, hw: 6.4, pele: "#8d5a3b", cabelo: "#1f1510", estilo: "puffs", blusa: "#e0533b", calca: "#2f6b8f", curta: true, tenis: "#f2b632", mochila: "#f2b632", tampa: "#d39a1f" },
-    { id: "escoteiro", idade: "10 a 14 anos", L: 13, T: 14, r: 5.2, hw: 7, pele: "#c99a6e", cabelo: "#3b2a1e", estilo: "curto", blusa: "#3f6fb5", calca: "#cdb88f", tenis: "#3a2a1e", mochila: "#7a5a35", tampa: "#8f6b40", lenco: true, chapeu: true },
-    { id: "jovem", idade: "15 a 17 anos", L: 15, T: 15, r: 5, hw: 7, pele: "#e2b48c", cabelo: "#4a2c1a", estilo: "rabo", blusa: "#2e6a52", calca: "#34507a", tenis: "#f4f1e8", mochila: "#b8432f", tampa: "#9a3726", capuz: true },
-    { id: "pioneiro", idade: "18 a 22 anos", L: 16, T: 16, r: 4.9, hw: 7.6, pele: "#6b4428", cabelo: "#15100c", estilo: "curto", blusa: "#c8102e", calca: "#b89f74", tenis: "#3a2a1e", mochila: "#2f4a3c", tampa: "#3d5e4c", lenco: true, rolo: true },
-    { id: "adulto", idade: "Adulto", L: 16, T: 16.5, r: 5, hw: 7.8, pele: "#a8714a", cabelo: "#2b1d14", estilo: "cacheado", blusa: "#2a5db0", calca: "#2a2f3a", tenis: "#5e3b1a", mochila: "#f2b632", tampa: "#d39a1f" },
-    { id: "idoso", idade: "Idoso", L: 14.5, T: 15.5, r: 5, hw: 7.6, pele: "#d7a982", cabelo: "#d9d6cf", estilo: "grisalho", blusa: "#8a5e36", calca: "#6b6f6a", tenis: "#3a2a1e", mochila: "#2e6a52", tampa: "#3a7a60", bengala: true, bone: true },
+    { id: "menina", g: "f", nome: "Menina", idade: "6 a 10 anos", L: 10, T: 12, r: 5.8, hw: 6.2, pele: "#8d5a3b", cabelo: "#1f1510", estilo: "puffs", blusa: "#e0533b", calca: "#2f6b8f", curta: true, tenis: "#f2b632", mochila: "#f2b632", tampa: "#d39a1f" },
+    { id: "menino", g: "m", nome: "Menino", idade: "6 a 10 anos", L: 10, T: 12, r: 5.8, hw: 6.4, pele: "#e2b48c", cabelo: "#5a3a22", estilo: "curto", blusa: "#2f8f55", calca: "#34507a", curta: true, tenis: "#e0533b", mochila: "#2a5db0", tampa: "#1f4a8a", bone: "#e0533b" },
+    { id: "escoteira", g: "f", nome: "Escoteira", idade: "10 a 14 anos", L: 13, T: 14, r: 5.2, hw: 6.8, pele: "#6b4428", cabelo: "#15100c", estilo: "rabo", blusa: "#3f6fb5", calca: "#cdb88f", tenis: "#3a2a1e", mochila: "#7a5a35", tampa: "#8f6b40", lenco: true, chapeu: true },
+    { id: "escoteiro", g: "m", nome: "Escoteiro", idade: "10 a 14 anos", L: 13, T: 14, r: 5.2, hw: 7, pele: "#c99a6e", cabelo: "#3b2a1e", estilo: "curto", blusa: "#3f6fb5", calca: "#cdb88f", tenis: "#3a2a1e", mochila: "#7a5a35", tampa: "#8f6b40", lenco: true, chapeu: true },
+    { id: "jovem-f", g: "f", nome: "Garota", idade: "15 a 17 anos", L: 15, T: 15, r: 5, hw: 6.8, pele: "#e2b48c", cabelo: "#4a2c1a", estilo: "rabo", blusa: "#2e6a52", calca: "#34507a", tenis: "#f4f1e8", mochila: "#b8432f", tampa: "#9a3726", capuz: true },
+    { id: "jovem-m", g: "m", nome: "Garoto", idade: "15 a 17 anos", L: 15, T: 15, r: 5, hw: 7.2, pele: "#8d5a3b", cabelo: "#15100c", estilo: "curto", blusa: "#5b4a8a", calca: "#2a2f3a", tenis: "#f4f1e8", mochila: "#f2b632", tampa: "#d39a1f", capuz: true },
+    { id: "pioneira", g: "f", nome: "Pioneira", idade: "18 a 22 anos", L: 16, T: 16, r: 4.9, hw: 7.2, pele: "#c99a6e", cabelo: "#7a4a24", estilo: "longo", blusa: "#c8102e", calca: "#b89f74", tenis: "#3a2a1e", mochila: "#2f4a3c", tampa: "#3d5e4c", lenco: true, rolo: true },
+    { id: "pioneiro", g: "m", nome: "Pioneiro", idade: "18 a 22 anos", L: 16, T: 16, r: 4.9, hw: 7.6, pele: "#6b4428", cabelo: "#15100c", estilo: "curto", blusa: "#c8102e", calca: "#b89f74", tenis: "#3a2a1e", mochila: "#2f4a3c", tampa: "#3d5e4c", lenco: true, rolo: true },
+    { id: "adulta", g: "f", nome: "Mulher adulta", idade: "Adulta", L: 16, T: 16.5, r: 5, hw: 7.4, pele: "#a8714a", cabelo: "#2b1d14", estilo: "cacheado", blusa: "#2a5db0", calca: "#2a2f3a", tenis: "#5e3b1a", mochila: "#f2b632", tampa: "#d39a1f" },
+    { id: "adulto", g: "m", nome: "Homem adulto", idade: "Adulto", L: 16.5, T: 16.5, r: 5, hw: 8, pele: "#e8c09a", cabelo: "#6b4a2a", estilo: "curto", blusa: "#b8432f", calca: "#34507a", tenis: "#3a2a1e", mochila: "#2e6a52", tampa: "#3a7a60", bone: "#1f4a3a" },
+    { id: "idosa", g: "f", nome: "Idosa", idade: "Idosa", L: 14.5, T: 15.5, r: 5, hw: 7.2, pele: "#8d5a3b", cabelo: "#e2dfd8", estilo: "coque", blusa: "#7a3d6b", calca: "#6b6f6a", tenis: "#3a2a1e", mochila: "#f2b632", tampa: "#d39a1f", bengala: true },
+    { id: "idoso", g: "m", nome: "Idoso", idade: "Idoso", L: 14.5, T: 15.5, r: 5, hw: 7.6, pele: "#d7a982", cabelo: "#d9d6cf", estilo: "grisalho", blusa: "#8a5e36", calca: "#6b6f6a", tenis: "#3a2a1e", mochila: "#2e6a52", tampa: "#3a7a60", bengala: true, bone: "#2f4a3c" },
   ];
   function figura(c) {
     const { L, T, r, hw } = c, sh = -(L + T), cy = sh - r + 0.8, f1 = (n) => +n.toFixed(2);
@@ -555,15 +574,17 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     // cabeça (de costas: o cabelo cobre o rosto; o rosto aparece quando olha para o lado)
     let h = `<rect x="-1.7" y="${f1(sh - 2.6)}" width="3.4" height="3" fill="${c.pele}"/>`;
     if (c.estilo === "rabo") h += `<path d="M-1.8 ${f1(cy + 1)} C-3.4 ${f1(cy + 6)} -2 ${f1(cy + 10)} 0 ${f1(cy + 11.5)} C2 ${f1(cy + 10)} 3.4 ${f1(cy + 6)} 1.8 ${f1(cy + 1)}z" fill="${c.cabelo}"/>`;
+    if (c.estilo === "longo") h += `<rect x="${f1(-r - 0.4)}" y="${f1(cy - 1)}" width="${f1(2 * r + 0.8)}" height="${f1(r + 6.5)}" rx="${f1(r * 0.8)}" fill="${c.cabelo}"/>`;
     h += `<circle cy="${f1(cy)}" r="${r}" fill="${c.pele}"/>`;
     h += `<circle class="rosto" cx="${f1(-r * 0.9)}" cy="${f1(cy + 0.4)}" r="${f1(r * 0.5)}" fill="${c.pele}"/>`;
     if (c.estilo === "grisalho") h += `<path d="M${f1(-r)} ${f1(cy - 0.4)} A${r} ${r} 0 0 0 ${r} ${f1(cy - 0.4)} L${f1(r * 0.8)} ${f1(cy - 2)} L${f1(-r * 0.8)} ${f1(cy - 2)}z" fill="${c.cabelo}"/>`;
     else if (c.estilo === "cacheado") h += `<circle cy="${f1(cy - 0.6)}" r="${f1(r + 1.1)}" fill="${c.cabelo}"/><circle cx="${f1(-r)}" cy="${f1(cy + 1.6)}" r="2.2" fill="${c.cabelo}"/><circle cx="${f1(r)}" cy="${f1(cy + 1.6)}" r="2.2" fill="${c.cabelo}"/>`;
     else h += `<circle cy="${f1(cy - 0.5)}" r="${f1(r + 0.1)}" fill="${c.cabelo}"/>`;
+    if (c.estilo === "coque") h += `<circle cy="${f1(cy - r * 0.55)}" r="${f1(r * 0.48)}" fill="${c.cabelo}" stroke="#bdb8ad" stroke-width=".5"/>`;
     if (c.estilo === "puffs") h += `<circle cx="${f1(-r * 0.95)}" cy="${f1(cy - r * 0.8)}" r="2.6" fill="${c.cabelo}"/><circle cx="${f1(r * 0.95)}" cy="${f1(cy - r * 0.8)}" r="2.6" fill="${c.cabelo}"/>`;
     h += `<circle cx="${f1(-r - 0.2)}" cy="${f1(cy + 0.6)}" r="1.1" fill="${c.pele}"/><circle cx="${f1(r + 0.2)}" cy="${f1(cy + 0.6)}" r="1.1" fill="${c.pele}"/>`;
     if (c.chapeu) h += `<ellipse cy="${f1(cy - 3.4)}" rx="${f1(r + 3.8)}" ry="2.1" fill="#7a5230"/><path d="M${f1(-r + 0.6)} ${f1(cy - 3.4)} L${f1(-r + 1.8)} ${f1(cy - 8.6)} Q0 ${f1(cy - 10.2)} ${f1(r - 1.8)} ${f1(cy - 8.6)} L${f1(r - 0.6)} ${f1(cy - 3.4)}z" fill="#8a5e36"/><rect x="${f1(-r + 0.8)}" y="${f1(cy - 5)}" width="${f1(2 * r - 1.6)}" height="1.4" fill="#4a3520"/>`;
-    if (c.bone) h += `<path d="M${f1(-r - 0.3)} ${f1(cy - 1)} A${f1(r + 0.3)} ${f1(r + 0.3)} 0 0 1 ${f1(r + 0.3)} ${f1(cy - 1)}z" fill="#2f4a3c"/><rect x="-1.6" y="${f1(cy - 1.6)}" width="3.2" height="1.2" rx=".5" fill="#d9d6cf"/>`;
+    if (c.bone) h += `<path d="M${f1(-r - 0.3)} ${f1(cy - 1)} A${f1(r + 0.3)} ${f1(r + 0.3)} 0 0 1 ${f1(r + 0.3)} ${f1(cy - 1)}z" fill="${c.bone}"/><rect x="-1.6" y="${f1(cy - 1.6)}" width="3.2" height="1.2" rx=".5" fill="#d9d6cf"/>`;
     s += `<g class="cabeca">${h}</g>`;
     return s;
   }
@@ -717,19 +738,29 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   const andarilho = $("#andarilho");
   $("#frente").before(andarilho); // quem sobe fica por baixo da borda do barco
 
-  // ---------- quem sobe a trilha ----------
-  let quem = PERSONAGENS[1];
-  try { const salvo = localStorage.getItem("dnm-quem"); if (salvo) quem = PERSONAGENS.find((p) => p.id === salvo) || quem; } catch (e) {}
+  // ---------- quem sobe a trilha: mulher, homem ou todos os bonecos ----------
+  let quem = PERSONAGENS[3], genero = "todos";
+  try { const salvo = localStorage.getItem("dnm-quem"); if (salvo) quem = PERSONAGENS.find((p) => p.id === salvo) || quem; genero = localStorage.getItem("dnm-genero") || genero; } catch (e) {}
   const quemEl = $("#quem");
-  quemEl.innerHTML = PERSONAGENS.map((p) => {
-    const h = altura(p) + 4, w = 30;
-    return `<button class="op" type="button" data-quem="${p.id}" aria-pressed="false"><svg viewBox="${-w / 2} ${-h} ${w} ${h + 2}" aria-hidden="true"><g class="boneco">${figura(p)}</g></svg>${p.idade}</button>`;
-  }).join("");
+  function mostraGenero(g) {
+    genero = g;
+    document.querySelectorAll(".genero [data-g]").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.g === g)));
+    const lista = PERSONAGENS.filter((p) => g === "todos" || p.g === g);
+    quemEl.classList.toggle("todos", g === "todos");
+    quemEl.innerHTML = lista.map((p) => {
+      const h = altura(p) + 4, w = 30;
+      return `<button class="op" type="button" data-quem="${p.id}" aria-pressed="false" aria-label="${p.nome}, ${p.idade.toLowerCase()}"><svg viewBox="${-w / 2} ${-h} ${w} ${h + 2}" aria-hidden="true"><g class="boneco">${figura(p)}</g></svg>${p.idade}</button>`;
+    }).join("");
+    try { localStorage.setItem("dnm-genero", g); } catch (e) {}
+    // ao trocar, fica o boneco da mesma idade
+    escolherQuem(lista.includes(quem) ? quem : lista[Math.floor(PERSONAGENS.indexOf(quem) / 2)] || lista[0]);
+  }
+  document.querySelectorAll(".genero [data-g]").forEach((b) => b.addEventListener("click", () => mostraGenero(b.dataset.g)));
   function escolherQuem(p) {
     quem = p; andarilho.innerHTML = figura(p);
     quemEl.querySelectorAll("[data-quem]").forEach((b) => { const sim = b.dataset.quem === p.id; b.classList.toggle("escolhida", sim); b.setAttribute("aria-pressed", String(sim)); });
     try { localStorage.setItem("dnm-quem", p.id); } catch (e) {}
-    pedeQuadro();
+    pedeQuadro(); medirDepois();
   }
   quemEl.addEventListener("click", (e) => { const b = e.target.closest("[data-quem]"); if (b) escolherQuem(PERSONAGENS.find((p) => p.id === b.dataset.quem)); });
 
@@ -898,7 +929,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   new ResizeObserver(medirDepois).observe(etapasEl);
   if (document.fonts) document.fonts.ready.then(medirDepois);
   criarEtapa(1);
-  escolherQuem(quem);
+  mostraGenero(genero);
 
   // ---------- texto do livro em HTML (listas, tabelas, citações, negrito) ----------
   function inline(s) {
