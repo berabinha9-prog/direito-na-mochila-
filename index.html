@@ -474,10 +474,10 @@ body[data-tela="trilha"] .rodape { display: none; }
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const ico = (id, cls = "icone") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
   const SITE = /github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://berabinha9-prog.github.io/direito-na-mochila-/";
-  const PDF = "";
+  const PDF = "https://berabinha9-prog.github.io/direito-na-mochila-/direito-na-mochila.pdf"; // 479 páginas, 17 MB
   const EMAIL = "direitonamochila01@gmail.com";
-  const sugestao = () => `<section class="bloco sugere"><h2>Sentiu falta de algum assunto?</h2><p>Mande a sua sugestão. Talvez ela entre numa atualização do livro, sem promessa de data.</p><div class="acoes"><a class="btn contorno" href="mailto:${EMAIL}?subject=${encodeURIComponent("Sugestão para o Direito na Mochila")}">Sugerir um tema</a><span class="email">${EMAIL}</span></div></section>`; // quando o livro estiver pronto, coloque aqui o endereço do PDF
-  const botaoPdf = (texto = "Baixar o livro em PDF (grátis)") => PDF
+  const sugestao = () => `<section class="bloco sugere"><h2>Sentiu falta de algum assunto?</h2><p>Mande a sua sugestão.</p><div class="acoes"><a class="btn contorno" href="mailto:${EMAIL}?subject=${encodeURIComponent("Sugestão para o Direito na Mochila")}">Sugerir um tema</a><span class="email">${EMAIL}</span></div></section>`; // quando o livro estiver pronto, coloque aqui o endereço do PDF
+  const botaoPdf = (texto = "Baixar o livro em PDF (grátis, 17 MB)") => PDF
     ? `<a class="btn" href="${PDF}" download>${ico("livro")}${texto}</a>`
     : `<span class="btn" aria-disabled="true">${ico("livro")}Livro em PDF: grátis, em breve</span><a class="btn avise" href="mailto:${EMAIL}?subject=${encodeURIComponent("Me avise quando o livro sair")}&body=${encodeURIComponent("Quero receber o Direito na Mochila quando o PDF ficar pronto.")}">Me avise quando sair</a>`;
 
@@ -1310,7 +1310,7 @@ body[data-tela="trilha"] .rodape { display: none; }
         <p>A ideia é simples: saber os próprios direitos ajuda a evitar problemas e a resolver os que aparecem. Por isso o livro é grátis e o site existe: para chegar ao máximo de pessoas. Cada vez que alguém compartilha, mais gente aprende.</p>
         <section class="bloco"><h2>O grupo</h2><img class="emblema" src="img/emblema.png" alt="Emblema do Grupo Escoteiro Santos Dumont" width="140" height="140"><p>Grupo Escoteiro Santos Dumont, 20º Curitiba, Paraná, fundado em 18 de dezembro de 1958. As cores do grupo, azul-escuro, azul royal e branco, estão no lenço do escoteiro e da escoteira da trilha e na bandeira do acampamento, lá no topo.</p></section>
         <section class="bloco"><h2>O autor</h2><p>André Yassuo Freitas é pioneiro do Grupo Escoteiro Santos Dumont e estudante de Direito na UFPR. Entrou no escotismo aos 12 anos, convidado por um amigo da escola que sabia que ele era “meio do mato”. Fez a promessa em 2017, recebeu a Lis de Ouro em 2019 e o Escoteiro da Pátria em 2022.</p><p>Num acampamento de sobrevivência, com pouca comida e muito cansaço, passou a enxergar o que não via antes: as pessoas na rua e as injustiças do dia a dia. Dali veio a escolha pelo Direito e, anos depois, este livro, feito para dar voz a quem não tem.</p><blockquote>“Esse projeto é o mínimo que eu posso entregar depois de tudo que o escotismo já me entregou.”</blockquote></section>
-        <section class="bloco"><h2>Como o livro foi feito</h2><ul><li>16 capítulos e 108 pontos, cada um começando por uma situação real, como “Blitz! E agora?”.</li><li>Linguagem simples, com passo a passo e um macete para lembrar.</li><li>Cada ponto cita a lei. Dos tribunais, entram só entendimentos consolidados, nunca um caso isolado.</li><li>Talvez haja uma atualização por ano, sem garantia.</li></ul></section>
+        <section class="bloco"><h2>Como o livro foi feito</h2><ul><li>16 capítulos e 108 pontos, cada um começando por uma situação real, como “Blitz! E agora?”.</li><li>Linguagem simples, com passo a passo e um macete para lembrar.</li><li>Cada ponto cita a lei. Dos tribunais, entram só entendimentos consolidados, nunca um caso isolado.</li></ul></section>
       </div>
       ${faixaLivro("Leia o livro, de graça", "E, se gostar, mande o site para alguém.")}`,
   };
