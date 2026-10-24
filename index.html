@@ -265,7 +265,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .texto-livro ul, .texto-livro ol { margin: 0; padding-left: 24px; display: grid; gap: 6px; }
 .texto-livro ul ul { margin-top: 6px; }
 .texto-livro ol li::marker { font-weight: 800; color: var(--mata); }
-.texto-livro blockquote { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--folha); border: 1px solid var(--linha); }
+.texto-livro blockquote, .texto-pagina blockquote { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--folha); border: 1px solid var(--linha); }
 .texto-livro .tabela { overflow-x: auto; border: 1px solid var(--linha); border-radius: 10px; }
 .texto-livro table { border-collapse: collapse; width: 100%; font-size: 16px; }
 .texto-livro th, .texto-livro td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--linha); vertical-align: top; }
@@ -1309,6 +1309,7 @@ body[data-tela="trilha"] .rodape { display: none; }
       <div class="texto-pagina">
         <p>A ideia é simples: saber os próprios direitos ajuda a evitar problemas e a resolver os que aparecem. Por isso o livro é grátis e o site existe: para chegar ao máximo de pessoas. Cada vez que alguém compartilha, mais gente aprende.</p>
         <section class="bloco"><h2>O grupo</h2><img class="emblema" src="img/emblema.png" alt="Emblema do Grupo Escoteiro Santos Dumont" width="140" height="140"><p>Grupo Escoteiro Santos Dumont, 20º Curitiba, Paraná, fundado em 18 de dezembro de 1958. As cores do grupo, azul-escuro, azul royal e branco, estão no lenço do escoteiro e da escoteira da trilha e na bandeira do acampamento, lá no topo.</p></section>
+        <section class="bloco"><h2>O autor</h2><p>André Yassuo Freitas é pioneiro do Grupo Escoteiro Santos Dumont e estudante de Direito na UFPR. Entrou no escotismo aos 12 anos, convidado por um amigo da escola que sabia que ele era “meio do mato”. Fez a promessa em 2017, recebeu a Lis de Ouro em 2019 e o Escoteiro da Pátria em 2022.</p><p>Num acampamento de sobrevivência, com pouca comida e muito cansaço, passou a enxergar o que não via antes: as pessoas na rua e as injustiças do dia a dia. Dali veio a escolha pelo Direito e, anos depois, este livro, feito para dar voz a quem não tem.</p><blockquote>“Esse projeto é o mínimo que eu posso entregar depois de tudo que o escotismo já me entregou.”</blockquote></section>
         <section class="bloco"><h2>Como o livro foi feito</h2><ul><li>16 capítulos e 108 pontos, cada um começando por uma situação real, como “Blitz! E agora?”.</li><li>Linguagem simples, com passo a passo e um macete para lembrar.</li><li>Cada ponto cita a lei. Dos tribunais, entram só entendimentos consolidados, nunca um caso isolado.</li><li>Talvez haja uma atualização por ano, sem garantia.</li></ul></section>
       </div>
       ${faixaLivro("Leia o livro, de graça", "E, se gostar, mande o site para alguém.")}`,
